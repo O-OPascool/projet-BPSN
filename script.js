@@ -1,117 +1,81 @@
-// Tableau simulant les stocks par ISBN
-let stocks = JSON.parse(localStorage.getItem('stocks')) || {
-    "9783161484100": 10,  // Exemple ISBN avec 10 exemplaires
-    "9781234567897": 0,   // Exemple ISBN avec 0 exemplaires (Hors stock)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, remove, push, child, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyDKEewyRf8TgMjXCsfHfzvnCpBUG-GYDig",
+    authDomain: "bpsn-74f1b.firebaseapp.com",
+    databaseURL: "https://bpsn-74f1b-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "bpsn-74f1b",
+    storageBucket: "bpsn-74f1b.firebasestorage.app",
+    messagingSenderId: "1057707303676",
+    appId: "1:1057707303676:web:63dd292678dead41c2ed79",
+    measurementId: "G-DZGXBJERKQ"
 };
 
-// Tableau simulant les informations des livres par ISBN
-// Charger booksData depuis localStorage OU utiliser l'objet initial s'il n'y a rien dans localStorage
-let booksData = JSON.parse(localStorage.getItem('booksData')) || {
-    "9783161484100": {
-        title: "Le Petit Prince",
-        author: "Antoine de Saint-Exupéry",
-        summary: "Un aviateur échoue dans le désert du Sahara et rencontre un jeune prince qui vient d'une autre planète.",
-        cover: "image.png"
-    },
-    "9781234567897": {
-        title: "1984",
-        author: "George Orwell",
-        summary: "Un roman dystopique sur un régime totalitaire qui surveille chaque aspect de la vie humaine.",
-        cover: "image.png"
-    }
-};
+// Initialiser Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
-// Fonction pour sauvegarder les stocks dans le localStorage
-function saveStocks() {
-    localStorage.setItem('stocks', JSON.stringify(stocks));
-}
-
-// Fonction pour sauvegarder booksData dans le localStorage
-function saveBooksData() {
-    localStorage.setItem('booksData', JSON.stringify(booksData));
-}
+// Références aux données dans la base de données
+const stocksRef = ref(database, 'stocks');
+const booksDataRef = ref(database, 'booksData');
 
 // Fonction de gestion de la recherche par ISBN
 document.getElementById('isbn-form').addEventListener('submit', function(event) {
-    event.preventDefault(); // Empêcher le rechargement de la page lors de la soumission du formulaire
-    const isbn = document.getElementById('isbn').value.trim(); // Récupérer l'ISBN saisi et enlever les espaces avant et après
+    event.preventDefault();
+    const isbn = document.getElementById('isbn').value.trim();
 
     // Validation basique de l'ISBN
     if (!isValidISBN(isbn)) {
         alert("Veuillez entrer un ISBN valide (ex: 10 ou 13 chiffres).");
-        return; // Arrêter la fonction si l'ISBN n'est pas valide
+        return;
     }
 
     // Masquer les informations du livre (au cas où elles étaient affichées)
     document.getElementById('book-info').classList.add('hidden');
 
-    fetchBookData(isbn); // Lancer la recherche du livre par ISBN
+    fetchBookData(isbn);
 });
 
 // Fonction de validation de l'ISBN (simple vérification de longueur)
 function isValidISBN(isbn) {
-    // Vérifier si l'ISBN a une longueur de 10 ou 13 caractères et si ce n'est pas NaN
     return (isbn.length === 10 || isbn.length === 13) && !isNaN(isbn);
 }
 
-// Fonction de récupération des données du livre (depuis booksData ou l'API Google Books)
-function fetchBookData(isbn) {
-    if (booksData[isbn]) {
-        // Utiliser les données locales si disponibles
-        const book = booksData[isbn];
-        document.getElementById('title').innerText = book.title || 'Titre non disponible';
-        document.getElementById('author').innerText = book.author || 'Auteur inconnu';
-        document.getElementById('summary').innerText = book.summary || 'Aucun résumé disponible.';
-        document.getElementById('cover').src = book.cover || 'image.png'; // Image par défaut
-
-        // Afficher les informations du livre MAINTENANT que l'ISBN est valide
-        document.getElementById('book-info').classList.remove('hidden');
-
-        // Afficher la section "Mettre à jour le stock"
-        displayStock(isbn);
-        document.getElementById('stock-form').classList.remove('hidden');
+// Récupération des données du livre (depuis Firebase ou l'API Google Books)
+async function fetchBookData(isbn) {
+    // Vérifier si le livre est déjà dans la base de données Firebase
+    const snapshot = await get(child(booksDataRef, isbn));
+    if (snapshot.exists()) {
+        const book = snapshot.val();
+        displayBookData(isbn, book);
     } else {
         // Faire la requête à l'API Google Books
         const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
-
         fetch(apiUrl)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`Erreur HTTP ! statut : ${response.status}`);
                 }
-                return response.json(); // Convertir la réponse en JSON
+                return response.json();
             })
             .then(data => {
                 if (data.totalItems > 0) {
-                    // Extraire les informations du premier livre trouvé
                     const book = data.items[0].volumeInfo;
-                    document.getElementById('title').innerText = book.title || 'Titre non disponible';
-                    document.getElementById('author').innerText = book.authors ? book.authors.join(', ') : 'Auteur inconnu';
-                    document.getElementById('summary').innerText = book.description || 'Aucun résumé disponible.';
-
-                    // Charger l'image de couverture ou utiliser une image par défaut
-                    const coverImage = book.imageLinks && book.imageLinks.thumbnail
-                        ? book.imageLinks.thumbnail
-                        : 'image.png';
-                    document.getElementById('cover').src = coverImage;
-
-                    // Stocker les données dans booksData pour éviter des requêtes futures
-                    booksData[isbn] = {
-                        title: book.title,
+                    const coverImage = book.imageLinks && book.imageLinks.thumbnail ? book.imageLinks.thumbnail : 'image.png';
+                    const bookData = {
+                        title: book.title || 'Titre non disponible',
                         author: book.authors ? book.authors.join(', ') : 'Auteur inconnu',
-                        summary: book.description,
+                        summary: book.description || 'Aucun résumé disponible.',
                         cover: coverImage
                     };
 
-                    // Sauvegarder booksData dans localStorage
-                    saveBooksData();
+                    // Enregistrer les données du livre dans Firebase
+                    set(ref(database, 'booksData/' + isbn), bookData);
 
-                    // Afficher les informations du livre MAINTENANT que l'ISBN est valide
-                    document.getElementById('book-info').classList.remove('hidden');
-
-                    // Afficher la section "Mettre à jour le stock"
-                    displayStock(isbn);
-                    document.getElementById('stock-form').classList.remove('hidden');
+                    // Afficher les informations du livre
+                    displayBookData(isbn, bookData);
                 } else {
                     alert('Aucun livre trouvé avec cet ISBN.');
                 }
@@ -122,39 +86,60 @@ function fetchBookData(isbn) {
     }
 }
 
+// Fonction pour afficher les données du livre
+function displayBookData(isbn, bookData) {
+    document.getElementById('title').innerText = bookData.title;
+    document.getElementById('author').innerText = bookData.author;
+    document.getElementById('summary').innerText = bookData.summary;
+    document.getElementById('cover').src = bookData.cover;
+
+    // Afficher les informations du livre MAINTENANT que l'ISBN est valide
+    document.getElementById('book-info').classList.remove('hidden');
+
+    // Afficher la section "Mettre à jour le stock"
+    displayStock(isbn);
+    document.getElementById('stock-form').classList.remove('hidden');
+}
+
 // Fonction pour afficher et mettre à jour le stock
 function displayStock(isbn) {
     const stockElement = document.getElementById('stock');
     const stockForm = document.getElementById('stock-form');
-    const updateStockButton = stockForm.querySelector('button'); // Cibler le bouton
+    const updateStockButton = stockForm.querySelector('button');
 
-    // Vérification du stock pour l'ISBN
-    if (isbn in stocks) {
-        if (stocks[isbn] > 0) {
-            stockElement.innerText = `En stock : ${stocks[isbn]} exemplaires`;
-            stockElement.classList.add('in-stock');
-            stockElement.classList.remove('out-of-stock');
+    // Récupérer le stock actuel depuis Firebase
+    onValue(ref(database, 'stocks/' + isbn), (snapshot) => {
+        const stockValue = snapshot.val();
+
+        // Vérification du stock pour l'ISBN
+        if (stockValue !== null) {
+            if (stockValue > 0) {
+                stockElement.innerText = `En stock : ${stockValue} exemplaires`;
+                stockElement.classList.add('in-stock');
+                stockElement.classList.remove('out-of-stock');
+            } else {
+                stockElement.innerText = 'Hors stock';
+                stockElement.classList.add('out-of-stock');
+                stockElement.classList.remove('in-stock');
+            }
         } else {
-            stockElement.innerText = 'Hors stock';
-            stockElement.classList.add('out-of-stock');
-            stockElement.classList.remove('in-stock');
+            stockElement.innerText = 'ISBN inconnu dans la base de données. Ajoutez une quantité.';
+            stockElement.classList.remove('in-stock', 'out-of-stock');
         }
-    } else {
-        stockElement.innerText = ' ISBN inconnu dans la base de données locale. Ajoutez une quantité.';
-        stockElement.classList.remove('in-stock', 'out-of-stock');
-    }
+    });
 
     // Gérer la mise à jour du stock
     stockForm.onsubmit = function(event) {
-        event.preventDefault(); // Empêcher le rechargement de la page
-        const newStock = parseInt(document.getElementById('new-stock').value); // Récupérer la nouvelle valeur du stock
+        event.preventDefault();
+        const newStock = parseInt(document.getElementById('new-stock').value);
 
         if (!isNaN(newStock) && newStock >= 0) {
-            stocks[isbn] = newStock; // Mettre à jour le stock dans l'objet stocks
+            // Mettre à jour le stock dans Firebase
+            set(ref(database, 'stocks/' + isbn), newStock);
 
             // Mettre à jour l'affichage après modification
             if (newStock > 0) {
-                stockElement.innerText = `En stock : ${stocks[isbn]} exemplaires`;
+                stockElement.innerText = `En stock : ${newStock} exemplaires`;
                 stockElement.classList.add('in-stock');
                 stockElement.classList.remove('out-of-stock');
             } else {
@@ -166,14 +151,8 @@ function displayStock(isbn) {
             // Changer la couleur du bouton après la mise à jour (vert)
             updateStockButton.style.backgroundColor = '#5cb85c';
 
-            // Supprimer la boite de dialogue
-            // alert(`Le stock a été mis à jour à ${stocks[isbn]} exemplaires.`);
-
-            // Sauvegarder les modifications dans le localStorage
-            saveStocks();
-            // Actualiser la page après la modification
+            // Actualiser la page (vous pouvez optimiser cela pour ne mettre à jour que la liste des livres)
             location.reload();
-            // updateBookList();
         } else {
             alert('Veuillez entrer une quantité valide.');
         }
@@ -182,15 +161,10 @@ function displayStock(isbn) {
 
 // Fonction pour supprimer un livre
 function deleteBook(isbn) {
-    // Demander une confirmation avant de supprimer le livre
     if (confirm(`Êtes-vous sûr de vouloir supprimer le livre avec l'ISBN ${isbn} ?`)) {
-        // Supprimer le livre de stocks et booksData
-        delete stocks[isbn];
-        delete booksData[isbn];
-
-        // Sauvegarder les modifications dans le localStorage
-        saveStocks();
-        saveBooksData();
+        // Supprimer le livre de stocks et booksData dans Firebase
+        remove(ref(database, 'stocks/' + isbn));
+        remove(ref(database, 'booksData/' + isbn));
 
         // Mettre à jour la liste des livres
         updateBookList();
@@ -202,47 +176,53 @@ function updateBookList() {
     const bookListElement = document.getElementById('book-list');
     bookListElement.innerHTML = ''; // Réinitialiser la liste
 
-    for (const isbn in stocks) {
-        const bookData = booksData[isbn];
-        if (bookData) {
-            // Créer un élément div pour chaque livre
-            const bookItem = document.createElement('div');
-            bookItem.classList.add('book-item');
-            bookItem.innerHTML = `
-                <div class="book-title">${bookData.title}</div>
-                <div>ISBN : ${isbn}</div>
-                <div>Auteur : ${bookData.author}</div>
-                <div>Résumé : ${bookData.summary}</div>
-                <div class="stock-info ${stocks[isbn] > 0 ? 'in-stock' : 'out-of-stock'}">
-                    ${stocks[isbn] > 0 ? `En stock : ${stocks[isbn]} exemplaires` : 'Hors stock'}
-                </div>
-                <button class="delete-button" data-isbn="${isbn}">Supprimer</button>
-            `;
-            bookListElement.appendChild(bookItem);
+    // Récupérer les données de stocks et booksData depuis Firebase
+    Promise.all([get(stocksRef), get(booksDataRef)])
+        .then(([stocksSnapshot, booksDataSnapshot]) => {
+            const stocks = stocksSnapshot.val() || {};
+            const booksData = booksDataSnapshot.val() || {};
 
-            // Ajouter un écouteur d'événement au bouton "Supprimer"
-            const deleteButton = bookItem.querySelector('.delete-button');
-            deleteButton.addEventListener('click', function() {
-                deleteBook(isbn); // Appeler la fonction deleteBook avec l'ISBN du livre
-            });
-        } else {
-            console.warn(`Données manquantes pour l'ISBN : ${isbn}`);
-        }
-    }
+            for (const isbn in stocks) {
+                if (booksData[isbn]) {
+                    const bookData = booksData[isbn];
+                    const bookItem = document.createElement('div');
+                    bookItem.classList.add('book-item');
+                    bookItem.innerHTML = `
+                        <div class="book-title">${bookData.title}</div>
+                        <div>ISBN : ${isbn}</div>
+                        <div>Auteur : ${bookData.author}</div>
+                        <div>Résumé : ${bookData.summary}</div>
+                        <div class="stock-info ${stocks[isbn] > 0 ? 'in-stock' : 'out-of-stock'}">
+                            ${stocks[isbn] > 0 ? `En stock : ${stocks[isbn]} exemplaires` : 'Hors stock'}
+                        </div>
+                        <button class="delete-button" data-isbn="${isbn}">Supprimer</button>
+                    `;
+                    bookListElement.appendChild(bookItem);
+
+                    // Ajouter un écouteur d'événement au bouton "Supprimer"
+                    const deleteButton = bookItem.querySelector('.delete-button');
+                    deleteButton.addEventListener('click', function() {
+                        deleteBook(isbn);
+                    });
+                } else {
+                    console.warn(`Données manquantes pour l'ISBN : ${isbn}`);
+                }
+            }
+        })
+        .catch(error => {
+            console.error("Erreur lors de la récupération des données :", error);
+        });
 }
 
 // Fonction pour filtrer la liste des livres par titre et auteur
 function filterBookList() {
-    const searchText = document.getElementById('search-book').value.toLowerCase(); // Récupérer le texte de recherche en minuscules
-    const bookItems = document.querySelectorAll('#book-list .book-item'); // Sélectionner tous les éléments de la liste des livres
+    const searchText = document.getElementById('search-book').value.toLowerCase();
+    const bookItems = document.querySelectorAll('#book-list .book-item');
 
     bookItems.forEach(item => {
-        const title = item.querySelector('.book-title').textContent.toLowerCase(); // Récupérer le titre du livre en minuscules
-        const author = item.querySelectorAll('div')[2].textContent.toLowerCase(); // Récupérer l'auteur du livre en minuscules
-        const authorWithoutPrefix = author.replace(/^auteur\s*:\s*/i, '');
-
-        // Vérifier si le titre ou l'auteur contient le texte de recherche
-        if (title.includes(searchText) || authorWithoutPrefix.includes(searchText)) {
+        const title = item.querySelector('.book-title').textContent.toLowerCase();
+        const author = item.querySelector('div:nth-child(3)').textContent.toLowerCase(); // Cibler le 3ème div (auteur)
+        if (title.includes(searchText) || author.includes(searchText)) {
             item.style.display = 'block'; // Afficher l'élément
         } else {
             item.style.display = 'none'; // Masquer l'élément
