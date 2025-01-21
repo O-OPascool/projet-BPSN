@@ -142,24 +142,25 @@ button:hover {
     background-color: #c9302c;
 }
 .footer {
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
+    position: relative; /* Change de fixed à relative */
+    bottom: 0; /* Retire le décalage */
+    left: 0; /* Aligné à gauche */
+    width: 100%; /* Étend la footer sur toute la largeur */
     font-size: 14px;
-    color: rgba(0, 0, 0, 0.5); /* Texte semi-transparent */
-    background-color: rgba(255, 255, 255, 0.2); /* Fond blanc très transparent */
-    padding: 10px;
-    border-radius: 5px;
+    color: rgba(0, 0, 0, 0.5); /* Texte légèrement transparent */
+    background-color: rgba(255, 255, 255, 0.4); /* Fond blanc très transparent */
+    padding: 10px 15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1); /* Ligne en haut pour séparer */
     font-family: 'Arial', sans-serif;
-    text-align: center; /* Centrer le contenu */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Légère ombre pour le style */
+    text-align: center; /* Centre le contenu */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Ombre subtile */
 }
 
 .footer-logo {
     display: block;
     max-width: 150px; /* Taille maximale du logo */
     margin: 0 auto 5px auto; /* Centrage avec espace en bas */
-    opacity: 1; /* Logo légèrement transparent */
+    opacity: 1;
 }
 
 .footer span {
