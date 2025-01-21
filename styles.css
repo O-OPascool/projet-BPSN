@@ -1,153 +1,170 @@
-/* Styles de base pour le corps de la page */
+/* Styles globaux */
 body {
-    font-family: 'Arial', sans-serif; /* Police de caractères */
-    color: #333; /* Couleur du texte */
-    margin: 0; /* Marge extérieure nulle */
-    padding: 0; /* Marge intérieure nulle */
-
-    /* Image de fond pour la page */
-    background-image: url("background.jpg"); /* Remplacez par le chemin de votre image */
-    background-size: cover; /* L'image couvre tout l'arrière-plan */
-    background-repeat: no-repeat; /* L'image ne se répète pas */
-    background-position: center; /* L'image est centrée */
-    background-attachment: fixed; /* L'image reste fixe même si on scroll */
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    background-image: url("background.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
 }
 
-/* Styles pour le conteneur principal */
 .container {
-    width: 90%; /* Largeur de 90% */
-    max-width: 800px; /* Largeur maximale de 800 pixels */
-    margin: 20px auto; /* Marge extérieure automatique en haut/bas et de 20 pixels à gauche/droite */
-    background: #fff; /* Fond blanc */
-    padding: 20px; /* Marge intérieure de 20 pixels */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Ombre légère */
-    border-radius: 8px; /* Coins arrondis */
-    background-color: rgba(255, 255, 255, 0.8); /* Fond blanc avec 80% d'opacité */
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 
-/* Styles pour le titre principal */
-h1 {
-    text-align: center; /* Texte centré */
-    color: #4CAF50; /* Couleur verte */
+h1, h2 {
+    text-align: center;
+    color: #4CAF50;
 }
 
-/* Styles pour les formulaires */
-.form, .stock-form {
-    display: flex; /* Utilisation du modèle de boîte flexible */
-    flex-direction: column; /* Alignement vertical des éléments */
-    align-items: center; /* Alignement horizontal centré */
-}
-
-/* Styles pour les champs de saisie de texte et de nombre */
-input[type="text"], input[type="number"] {
-    width: 80%; /* Largeur de 80% */
-    padding: 10px; /* Marge intérieure de 10 pixels */
-    margin: 10px 0; /* Marge extérieure de 10 pixels en haut/bas et de 0 à gauche/droite */
-    border: 1px solid #ccc; /* Bordure grise de 1 pixel */
-    border-radius: 4px; /* Coins arrondis */
-}
-
-/* Styles pour les boutons */
-button {
-    padding: 10px 15px; /* Marge intérieure de 10 pixels en haut/bas et de 15 pixels à gauche/droite */
-    border: none; /* Pas de bordure */
-    border-radius: 4px; /* Coins arrondis */
-    background-color: #4CAF50; /* Couleur de fond verte */
-    color: white; /* Texte en blanc */
-    cursor: pointer; /* Curseur en forme de main au survol */
-    transition: background-color 0.3s; /* Transition fluide de la couleur de fond */
-    width: 100px;
-}
-
-/* Styles pour le survol des boutons */
-button:hover {
-    background-color: #45a049; /* Couleur de fond légèrement plus foncée au survol */
-}
-
-/* Styles pour la section d'informations sur le livre */
-#book-info {
-    margin-top: 20px; /* Marge supérieure de 20 pixels */
-    text-align: center; /* Texte centré */
-}
-
-/* Styles pour l'image de couverture */
-#cover {
-    max-width: 100%; /* Largeur maximale de 100% */
-    height: auto; /* Hauteur automatique pour conserver les proportions */
-    border-radius: 4px; /* Coins arrondis */
-}
-
-/* Styles pour les informations de stock */
-.stock-info {
-    font-weight: bold; /* Texte en gras */
-}
-
-/* Styles pour les indicateurs de stock */
-.in-stock {
-    color: green; /* Couleur verte pour "en stock" */
-}
-
-.out-of-stock {
-    color: red; /* Couleur rouge pour "hors stock" */
-}
-
-/* Styles pour la liste des livres */
-#book-list {
-    margin-top: 20px; /* Marge supérieure de 20 pixels */
-    padding: 10px; /* Marge intérieure de 10 pixels */
-    border: 1px solid #ccc; /* Bordure grise de 1 pixel */
-    border-radius: 4px; /* Coins arrondis */
-    background-color: #fafafa; /* Couleur de fond gris clair */
-}
-
-/* Styles pour les éléments de la liste des livres */
-.book-item {
-    border-bottom: 1px solid #ddd; /* Bordure inférieure grise de 1 pixel */
-    padding: 10px 0; /* Marge intérieure de 10 pixels en haut/bas et de 0 à gauche/droite */
-}
-
-/* Styles pour le dernier élément de la liste des livres (pas de bordure inférieure) */
-.book-item:last-child {
-    border-bottom: none;
-}
-
-/* Styles pour le titre du livre */
-.book-title {
-    font-weight: bold; /* Texte en gras */
-    color: #4CAF50; /* Couleur verte */
-}
-
-/* Styles pour la marge supérieure des informations de stock */
-.stock-info {
-    margin-top: 5px; /* Marge supérieure de 5 pixels */
-}
-
-/* Style pour le bouton Supprimer */
-.delete-button {
-    background-color: #d9534f; /* Couleur de fond rouge */
-    color: white; /* Texte en blanc */
-    border: none; /* Pas de bordure */
-    padding: 5px 10px; /* Marge intérieure de 5 pixels en haut/bas et de 10 pixels à gauche/droite */
-    border-radius: 4px; /* Coins arrondis */
-    cursor: pointer; /* Curseur en forme de main au survol */
-    margin-top: 5px; /* Marge supérieure de 5 pixels */
-}
-
-/* Styles pour le survol du bouton Supprimer */
-.delete-button:hover {
-    background-color: #c9302c; /* Couleur de fond légèrement plus foncée au survol */
-}
-
-/* Classe pour masquer les éléments */
 .hidden {
     display: none;
 }
 
-/* Styles pour la barre de recherche */
-#search-book {
-    width: 50%; /* Largeur de 50% */
-    padding: 10px; /* Marge intérieure de 10 pixels */
-    margin: 10px 0; /* Marge extérieure de 10 pixels en haut/bas et de 0 à gauche/droite */
-    border: 1px solid #ccc; /* Bordure grise de 1 pixel */
-    border-radius: 4px; /* Coins arrondis */
+input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#book-list {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fafafa;
+}
+
+.book-item {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+}
+
+.book-title {
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.delete-button {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: #c9302c;
+}
+
+/* Modal */
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.confirm-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.confirm-button:hover {
+    background-color: #45a049;
+}
+
+.cancel-button {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cancel-button:hover {
+    background-color: #c9302c;
+}
+.footer {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.5); /* Texte semi-transparent */
+    background-color: rgba(255, 255, 255, 0.2); /* Fond blanc très transparent */
+    padding: 10px;
+    border-radius: 5px;
+    font-family: 'Arial', sans-serif;
+    text-align: center; /* Centrer le contenu */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Légère ombre pour le style */
+}
+
+.footer-logo {
+    display: block;
+    max-width: 150px; /* Taille maximale du logo */
+    margin: 0 auto 5px auto; /* Centrage avec espace en bas */
+    opacity: 1; /* Logo légèrement transparent */
+}
+
+.footer span {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px; /* Taille plus petite pour le texte */
+    color: rgba(0, 0, 0, 0.6); /* Texte légèrement plus visible */
 }
