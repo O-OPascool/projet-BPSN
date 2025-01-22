@@ -1,7 +1,3 @@
-// Import des modules Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
-import { getDatabase, ref, child, set, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
-
 // Configuration Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDKEewyRf8TgMjXCsfHfzvnCpBUG-GYDig",
@@ -14,10 +10,10 @@ const firebaseConfig = {
     measurementId: "G-DZGXBJERKQ"
 };
 
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-const stocksRef = ref(database, 'stocks');
-const booksDataRef = ref(database, 'booksData');
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const stocksRef = database.ref('stocks');
+const booksDataRef = database.ref('booksData');
 
 function isValidISBN(isbn) {
     const cleanIsbn = isbn.replace(/-/g, ''); // Retire les tirets
@@ -48,8 +44,8 @@ function deleteBook(isbn) {
     showConfirmation(`Supprimer le livre avec l'ISBN ${isbn} ?`, (confirmed) => {
         if (confirmed) {
             Promise.all([
-                set(child(stocksRef, isbn), null),
-                set(child(booksDataRef, isbn), null)
+                stocksRef.child(isbn).set(null),
+                booksDataRef.child(isbn).set(null)
             ])
             .then(() => alert(`Livre supprimé.`))
             .catch(error => alert('Erreur lors de la suppression : ' + error.message)); // Message utilisateur
@@ -69,7 +65,7 @@ document.getElementById('stock-form').addEventListener('submit', (event) => {
         showConfirmation(`Confirmer la mise à jour du stock pour ${isbn} ?`, async (confirmed) => {
             if (confirmed) {
                 try {
-                    await set(child(stocksRef, isbn), newStock);
+                    await stocksRef.child(isbn).set(newStock);
                     alert('Stock mis à jour.');
                 } catch (error) {
                     alert('Erreur lors de la mise à jour : ' + error.message);
@@ -81,8 +77,8 @@ document.getElementById('stock-form').addEventListener('submit', (event) => {
 
 function initializeBookListListener() {
     const bookListElement = document.getElementById('book-list');
-    onValue(booksDataRef, (booksSnapshot) => {
-        onValue(stocksRef, (stocksSnapshot) => {
+    booksDataRef.on('value', (booksSnapshot) => {
+        stocksRef.on('value', (stocksSnapshot) => {
             bookListElement.innerHTML = '';
             const books = booksSnapshot.val() || {};
             const stocks = stocksSnapshot.val() || {};
