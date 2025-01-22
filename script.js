@@ -8,7 +8,7 @@ const firebaseConfig = {
     authDomain: "bpsn-74f1b.firebaseapp.com",
     databaseURL: "https://bpsn-74f1b-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "bpsn-74f1b",
-    storageBucket: "bpsn-74f1b.firebasestorage.app",
+    storageBucket: "bpsn-74f1b.appspot.com",  // Corrected storage bucket URL
     messagingSenderId: "1057707303676",
     appId: "1:1057707303676:web:63dd292678dead41c2ed79",
     measurementId: "G-DZGXBJERKQ"
