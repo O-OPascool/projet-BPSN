@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion de Stock de Livres</title>
     <link rel="stylesheet" href="styles.css">
-    <script defer src="/_vercel/insights/script.js"></script>  <!-- AJOUTÉ -->
+    <script defer src="scripts/vercel-insights.js"></script>  <!-- Updated script path -->
 </head>
 <body>
     <div class="container">
         <h1>Recherche et Gestion de Stock</h1>
         <!-- Formulaire pour rechercher un livre via ISBN -->
         <form id="isbn-form" class="form">
-   	 <input type="text" id="isbn" placeholder="Entrez un ISBN (10 ou 13 chiffres)" required 
-           oninvalid="this.setCustomValidity('Veuillez entrer un ISBN valide (10 ou 13 chiffres).')" 
-           oninput="this.setCustomValidity('')">
-    	<button type="submit">Rechercher</button>
-	</form>
-
+            <input type="text" id="isbn" placeholder="Entrez un ISBN (10 ou 13 chiffres)" required 
+                oninvalid="this.setCustomValidity('Veuillez entrer un ISBN valide (10 ou 13 chiffres).')" 
+                oninput="this.setCustomValidity('')">
+            <button type="submit">Rechercher</button>
+        </form>
 
         <div id="book-info" class="hidden">
             <img id="cover" src="" alt="Image de couverture">
@@ -54,7 +53,7 @@
     <script type="module" src="script.js"></script>
 </body>
 <div class="footer">
-    <img src="image.png" alt="Logo" class="footer-logo">
+    <img src="images/logo.png" alt="Logo" class="footer-logo">  <!-- Updated image path -->
     <span>Pascal Phung</span><br>
     <span>Cmathgalcor</span><br>
     <span>Carl Chanard</span><br>
