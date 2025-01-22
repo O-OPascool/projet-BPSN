@@ -1,59 +1,140 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion de Stock de Livres</title>
+    <title>Gestion des Stocks</title>
     <link rel="stylesheet" href="styles.css">
-    <script defer src="script.js"></script> <!-- Correction du chemin -->
+    <style>
+        /* Ajout rapide de styles de base pour un meilleur rendu */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        main {
+            padding: 20px;
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #book-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .book-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            flex: 1 1 calc(33.333% - 20px);
+            box-sizing: border-box;
+        }
+        .book-item button {
+            background-color: #e74c3c;
+        }
+        .book-item button:hover {
+            background-color: #c0392b;
+        }
+        /* Modale de confirmation */
+        #confirmation-modal.hidden {
+            display: none;
+        }
+        #confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #confirmation-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        #confirmation-content button {
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Recherche et Gestion de Stock</h1>
-        <!-- Formulaire pour rechercher un livre via ISBN -->
-        <form id="isbn-form" class="form">
-   	 <input type="text" id="isbn" placeholder="Entrez un ISBN (10 ou 13 chiffres)" required 
-           oninvalid="this.setCustomValidity('Veuillez entrer un ISBN valide (10 ou 13 chiffres).')" 
-           oninput="this.setCustomValidity('')">
-    	<button type="submit">Rechercher</button>
-	</form>
-
-        <div id="book-info" class="hidden">
-            <img id="cover" src="" alt="Image de couverture du livre">
-            <p><strong>Titre :</strong> <span id="title"></span></p>
-            <p><strong>Auteur :</strong> <span id="author"></span></p>
-            <p><strong>Résumé :</strong> <span id="summary"></span></p>
-            <p><strong>Disponibilité :</strong> <span id="stock" class="stock-info">Vérification en cours...</span></p>
-
-            <!-- Formulaire pour mettre à jour le stock -->
-            <form id="stock-form" class="stock-form">
-                <label for="new-stock">Mettre à jour le stock :</label>
-                <input type="number" id="new-stock" placeholder="Nombre d'exemplaires" required>
-                <button type="submit">Mettre à jour</button>
-            </form>
-        </div>
+    <header>
+        <h1>Gestion des Stocks</h1>
+    </header>
+    <main>
+        <!-- Formulaire de mise à jour de stock -->
+        <form id="stock-form">
+            <label for="isbn">ISBN :</label>
+            <input type="text" id="isbn" placeholder="Entrez l'ISBN" required>
+            <label for="new-stock">Nouveau Stock :</label>
+            <input type="number" id="new-stock" placeholder="Entrez le stock" min="0" required>
+            <button type="submit">Mettre à jour</button>
+        </form>
 
         <!-- Liste des livres -->
-        <h2>Liste des Livres Disponibles</h2>
-        <input type="text" id="search-book" placeholder="Rechercher par titre ou auteur...">
-        <div id="book-list"></div>
+        <section id="book-list">
+            <!-- Les livres seront ajoutés dynamiquement ici -->
+        </section>
+    </main>
 
-        <!-- Modal de confirmation -->
-        <div id="confirmation-modal" class="modal hidden">
-            <div class="modal-content">
-                <p id="confirmation-message"></p>
-                <div class="modal-buttons">
-                    <button id="confirm-yes" class="confirm-button">Oui</button>
-                    <button id="confirm-no" class="cancel-button">Non</button>
-                </div>
-            </div>
+    <!-- Modale de confirmation -->
+    <div id="confirmation-modal" class="hidden">
+        <div id="confirmation-content">
+            <p id="confirmation-message"></p>
+            <button id="confirm-yes">Oui</button>
+            <button id="confirm-no">Non</button>
         </div>
     </div>
-	<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js"></script>
-<script src="script.js"></script>
+
+    <!-- Scripts Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js"></script>
+
+    <!-- Script principal -->
+    <script src="script.js"></script>
 </body>
-<div class="footer">
+	<div class="footer">
     <img src="image.png" alt="Logo de la bibliothèque" class="footer-logo">
     <span>Pascal Phung</span><br>
     <span>Cmathgalcor</span><br>
