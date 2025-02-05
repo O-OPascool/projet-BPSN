@@ -131,25 +131,26 @@ document.getElementById('stock-form').addEventListener('submit', async function 
     alert('Veuillez entrer une quantité valide.');
   }
 });
-// Initialiser la liste des livres avec écoute en temps réel
 function initializeBookListListener() {
   const bookListElement = document.getElementById('book-list');
+  
   onValue(booksDataRef, (booksDataSnapshot) => {
     onValue(stocksRef, (stocksSnapshot) => {
       const booksData = booksDataSnapshot.val() || {};
       const stocks = stocksSnapshot.val() || {};
-      bookListElement.innerHTML = '';
-      // Réinitialiser la liste
+      bookListElement.innerHTML = ''; // Réinitialiser la liste
+
       for (const isbn in booksData) {
         const bookData = booksData[isbn];
         const stock = stocks[isbn] || 0;
+
         const bookItem = document.createElement('div');
         bookItem.classList.add('book-item');
         bookItem.innerHTML = `
-          <div class="book-title">Titre : ${bookData.title}</div>
-          <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
-          <div class="book-summary">Résumé : ${bookData.summary}</div>
-          <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
+          <h3>${bookData.title}</h3>
+          <p>Auteur(s) : ${bookData.author || 'Auteur inconnu'}</p>
+          <p>Résumé : ${bookData.summary}</p>
+          <p>Stock : ${stock > 0 ? `${stock} exemplaire(s)` : 'Hors stock'}</p>
         `;
         bookListElement.appendChild(bookItem);
       }
