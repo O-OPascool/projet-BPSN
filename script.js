@@ -133,42 +133,27 @@ document.getElementById('stock-form').addEventListener('submit', async function 
 
 // Initialiser la liste des livres avec écoute en temps réel
 function initializeBookListListener() {
-    const bookListElement = document.getElementById('book-list');
-
-    onValue(booksDataRef, (booksDataSnapshot) => {
-        onValue(stocksRef, (stocksSnapshot) => {
-            const booksData = booksDataSnapshot.val() || {};
-            const stocks = stocksSnapshot.val() || {};
-
-            bookListElement.innerHTML = ''; // Réinitialiser la liste
-
-            for (const isbn in booksData) {
-                const bookData = booksData[isbn];
-                const stock = stocks[isbn] || 0;
-
-                const bookItem = document.createElement('div');
-                bookItem.classList.add('book-item');
-
-                bookItem.innerHTML = `
-                    <div class="book-title"><strong>${bookData.title}</strong></div>
-                    <div>Auteur : ${bookData.author}</div>
-                    <div>Résumé : ${bookData.summary}</div>
-                    <div>ISBN : <strong>${isbn}</strong></div>
-                    <div class="stock-info ${stock > 0 ? 'in-stock' : 'out-of-stock'}">
-                        ${stock > 0 ? `En stock : ${stock} exemplaire(s)` : 'Hors stock'}
-                    </div>
-                    <button class="delete-button" data-isbn="${isbn}">Supprimer</button>
-                `;
-
-                const deleteButton = bookItem.querySelector('.delete-button');
-                deleteButton.addEventListener('click', function () {
-                    deleteBook(isbn);
-                });
-
-                bookListElement.appendChild(bookItem);
-            }
-        });
+  const bookListElement = document.getElementById('book-list');
+  onValue(booksDataRef, (booksDataSnapshot) => {
+    onValue(stocksRef, (stocksSnapshot) => {
+      const booksData = booksDataSnapshot.val() || {};
+      const stocks = stocksSnapshot.val() || {};
+      bookListElement.innerHTML = '';
+      // Réinitialiser la liste
+      for (const isbn in booksData) {
+        const bookData = booksData[isbn];
+        const stock = stocks[isbn] || 0;
+        const bookItem = document.createElement('div');
+        bookItem.classList.add('book-item');
+        bookItem.innerHTML = `
+          <div class="book-title">Titre : ${bookData.title}</div>
+          <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
+          <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
+        `;
+        bookListElement.appendChild(bookItem);
+      }
     });
+  });
 }
 
 // Fonction pour supprimer un livre
@@ -178,12 +163,12 @@ function deleteBook(isbn) {
             set(child(stocksRef, isbn), null), // Supprime le stock
             set(child(booksDataRef, isbn), null) // Supprime les données du livre
         ])
-            .then(() => {
-                alert('Livre supprimé avec succès.');
-            })
-            .catch(error => {
-                console.error('Erreur lors de la suppression :', error);
-            });
+        .then(() => {
+            alert('Livre supprimé avec succès.');
+        })
+        .catch(error => {
+            console.error('Erreur lors de la suppression :', error);
+        });
     }
 }
 
