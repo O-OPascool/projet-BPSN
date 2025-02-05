@@ -131,26 +131,26 @@ document.getElementById('stock-form').addEventListener('submit', async function 
     alert('Veuillez entrer une quantité valide.');
   }
 });
+// Initialiser la liste des livres avec écoute en temps réel
 function initializeBookListListener() {
   const bookListElement = document.getElementById('book-list');
-  
   onValue(booksDataRef, (booksDataSnapshot) => {
     onValue(stocksRef, (stocksSnapshot) => {
       const booksData = booksDataSnapshot.val() || {};
       const stocks = stocksSnapshot.val() || {};
-      bookListElement.innerHTML = ''; // Réinitialiser la liste
-
+      bookListElement.innerHTML = '';
+      // Réinitialiser la liste
       for (const isbn in booksData) {
         const bookData = booksData[isbn];
         const stock = stocks[isbn] || 0;
-
         const bookItem = document.createElement('div');
         bookItem.classList.add('book-item');
         bookItem.innerHTML = `
-          <h3>${bookData.title}</h3>
-          <p>Auteur(s) : ${bookData.author || 'Auteur inconnu'}</p>
-          <p>Résumé : ${bookData.summary}</p>
-          <p>Stock : ${stock > 0 ? `${stock} exemplaire(s)` : 'Hors stock'}</p>
+          <div class="book-title">Titre : ${bookData.title}</div>
+          <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
+          <div class="book-summary">Résumé : ${bookData.summary}</div>
+          <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
+	<span class="book-author">${bookData.author || 'Auteur inconnu'}</span>
         `;
         bookListElement.appendChild(bookItem);
       }
@@ -195,44 +195,3 @@ initializeBookListListener();
 
 // Ajouter un écouteur pour la barre de recherche
 document.getElementById('search-book').addEventListener('input', filterBookList);
-// Fonction pour rechercher des livres par auteur
-document.getElementById('author-form').addEventListener('submit', async function (event) {
-  event.preventDefault();
-  const authorName = document.getElementById('author').value.trim().toLowerCase();
-  const bookListElement = document.getElementById('book-list');
-
-  if (!authorName) {
-    alert("Veuillez entrer un nom d'auteur.");
-    return;
-  }
-
-  try {
-    const snapshot = await get(booksDataRef);
-    const booksData = snapshot.val() || {};
-    bookListElement.innerHTML = ''; // Réinitialiser la liste des livres
-
-    let found = false;
-    for (const isbn in booksData) {
-      const book = booksData[isbn];
-      if (book.author && book.author.toLowerCase().includes(authorName)) {
-        found = true;
-        const bookItem = document.createElement('div');
-        bookItem.classList.add('book-item');
-        bookItem.innerHTML = `
-          <h3>${book.title}</h3>
-          <p>Auteur(s) : ${book.author}</p>
-          <p>Résumé : ${book.summary}</p>
-        `;
-        bookListElement.appendChild(bookItem);
-      }
-    }
-
-    if (!found) {
-      alert("Aucun livre trouvé pour cet auteur.");
-    }
-  } catch (error) {
-    console.error("Erreur lors de la recherche par auteur :", error);
-    alert("Une erreur est survenue lors de la recherche.");
-  }
-});
-
