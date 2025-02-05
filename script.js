@@ -108,29 +108,29 @@ async function displayStock(isbn) {
 
 // Fonction pour gérer la mise à jour du stock
 document.getElementById('stock-form').addEventListener('submit', async function (event) {
-    event.preventDefault();
-    const newStock = parseInt(document.getElementById('new-stock').value);
-    const isbn = document.getElementById('isbn').value.trim();
-
-    if (!isValidISBN(isbn)) {
-        alert("ISBN non valide.");
-        return;
+  event.preventDefault();
+  const newStock = parseInt(document.getElementById('new-stock').value);
+  const isbn = document.getElementById('isbn').value.trim();
+  if (!isValidISBN(isbn)) {
+    alert("ISBN non valide.");
+    return;
+  }
+  if (!isNaN(newStock) && newStock >= 0) {
+    try {
+      await set(child(stocksRef, isbn), newStock);
+      alert('Stock mis à jour avec succès !');
+      displayStock(isbn);
+      // Réinitialiser les champs de saisie 
+      document.getElementById('isbn').value = "";
+      document.getElementById('new-stock').value = "";
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du stock :", error);
+      alert('Impossible de mettre à jour le stock.');
     }
-
-    if (!isNaN(newStock) && newStock >= 0) {
-        try {
-            await set(child(stocksRef, isbn), newStock);
-            alert('Stock mis à jour avec succès !');
-            displayStock(isbn);
-        } catch (error) {
-            console.error("Erreur lors de la mise à jour du stock :", error);
-            alert('Impossible de mettre à jour le stock.');
-        }
-    } else {
-        alert('Veuillez entrer une quantité valide.');
-    }
+  } else {
+    alert('Veuillez entrer une quantité valide.');
+  }
 });
-
 // Initialiser la liste des livres avec écoute en temps réel
 function initializeBookListListener() {
   const bookListElement = document.getElementById('book-list');
