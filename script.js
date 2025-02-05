@@ -195,3 +195,44 @@ initializeBookListListener();
 
 // Ajouter un écouteur pour la barre de recherche
 document.getElementById('search-book').addEventListener('input', filterBookList);
+// Fonction pour rechercher des livres par auteur
+document.getElementById('author-form').addEventListener('submit', async function (event) {
+  event.preventDefault();
+  const authorName = document.getElementById('author').value.trim().toLowerCase();
+  const bookListElement = document.getElementById('book-list');
+
+  if (!authorName) {
+    alert("Veuillez entrer un nom d'auteur.");
+    return;
+  }
+
+  try {
+    const snapshot = await get(booksDataRef);
+    const booksData = snapshot.val() || {};
+    bookListElement.innerHTML = ''; // Réinitialiser la liste des livres
+
+    let found = false;
+    for (const isbn in booksData) {
+      const book = booksData[isbn];
+      if (book.author && book.author.toLowerCase().includes(authorName)) {
+        found = true;
+        const bookItem = document.createElement('div');
+        bookItem.classList.add('book-item');
+        bookItem.innerHTML = `
+          <h3>${book.title}</h3>
+          <p>Auteur(s) : ${book.author}</p>
+          <p>Résumé : ${book.summary}</p>
+        `;
+        bookListElement.appendChild(bookItem);
+      }
+    }
+
+    if (!found) {
+      alert("Aucun livre trouvé pour cet auteur.");
+    }
+  } catch (error) {
+    console.error("Erreur lors de la recherche par auteur :", error);
+    alert("Une erreur est survenue lors de la recherche.");
+  }
+});
+
