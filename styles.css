@@ -117,6 +117,13 @@ button:hover {
     color: #4CAF50; /* Couleur verte */
 }
 
+.book-author {
+    display: block;
+    font-style: italic;
+    color: #555;
+    margin-top: 5px;
+}
+
 /* Styles pour la marge supérieure des informations de stock */
 .stock-info {
     margin-top: 5px; /* Marge supérieure de 5 pixels */
@@ -151,3 +158,4 @@ button:hover {
     border: 1px solid #ccc; /* Bordure grise de 1 pixel */
     border-radius: 4px; /* Coins arrondis */
 }
+
