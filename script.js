@@ -148,6 +148,7 @@ function initializeBookListListener() {
         bookItem.innerHTML = `
           <div class="book-title">Titre : ${bookData.title}</div>
           <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
+          <div class="book-summary">Résumé : ${bookData.summary}</div>
           <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
         `;
         bookListElement.appendChild(bookItem);
