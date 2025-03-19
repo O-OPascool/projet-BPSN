@@ -1,6 +1,6 @@
 // Import des modules Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
-import { getDatabase, ref, child, set, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
+import { getDatabase, ref, child, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
 
 // Configuration Firebase
 const firebaseConfig = {
@@ -31,12 +31,10 @@ function isValidISBN(isbn) {
 document.getElementById('isbn-form').addEventListener('submit', async function (event) {
     event.preventDefault();
     const isbn = document.getElementById('isbn').value.trim();
-
     if (!isValidISBN(isbn)) {
         alert("Veuillez entrer un ISBN valide (10 ou 13 chiffres).");
         return;
     }
-
     document.getElementById('book-info').classList.add('hidden');
     await fetchBookData(isbn);
 });
@@ -52,9 +50,7 @@ async function fetchBookData(isbn) {
         } else {
             const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
             const response = await fetch(apiUrl);
-
             if (!response.ok) throw new Error(`Erreur API : ${response.status}`);
-
             const data = await response.json();
             if (data.totalItems > 0) {
                 const book = data.items[0].volumeInfo;
@@ -64,7 +60,6 @@ async function fetchBookData(isbn) {
                     summary: book.description || 'Aucun résumé disponible.',
                     cover: book.imageLinks?.thumbnail || 'image.png'
                 };
-
                 await set(child(booksDataRef, isbn), bookData);
                 displayBookData(isbn, bookData);
                 displayStock(isbn);
@@ -93,11 +88,8 @@ async function displayStock(isbn) {
     try {
         const snapshot = await get(child(stocksRef, isbn));
         const stockValue = snapshot.val();
-
         if (stockValue !== null) {
-            stockElement.innerText = stockValue > 0
-                ? `En stock : ${stockValue} exemplaires`
-                : 'Hors stock';
+            stockElement.innerText = stockValue > 0 ? `En stock : ${stockValue} exemplaires` : 'Hors stock';
         } else {
             stockElement.innerText = 'Stock non défini.';
         }
@@ -108,90 +100,68 @@ async function displayStock(isbn) {
 
 // Fonction pour gérer la mise à jour du stock
 document.getElementById('stock-form').addEventListener('submit', async function (event) {
-  event.preventDefault();
-  const newStock = parseInt(document.getElementById('new-stock').value);
-  const isbn = document.getElementById('isbn').value.trim();
-  if (!isValidISBN(isbn)) {
-    alert("ISBN non valide.");
-    return;
-  }
-  if (!isNaN(newStock) && newStock >= 0) {
-    try {
-      await set(child(stocksRef, isbn), newStock);
-      alert('Stock mis à jour avec succès !');
-      displayStock(isbn);
-      // Réinitialiser les champs de saisie 
-      document.getElementById('isbn').value = "";
-      document.getElementById('new-stock').value = "";
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour du stock :", error);
-      alert('Impossible de mettre à jour le stock.');
+    event.preventDefault();
+    const newStock = parseInt(document.getElementById('new-stock').value);
+    const isbn = document.getElementById('isbn').value.trim();
+    if (!isValidISBN(isbn)) {
+        alert("ISBN non valide.");
+        return;
     }
-  } else {
-    alert('Veuillez entrer une quantité valide.');
-  }
+    if (!isNaN(newStock) && newStock >= 0) {
+        try {
+            await set(child(stocksRef, isbn), newStock);
+            alert('Stock mis à jour avec succès !');
+            displayStock(isbn);
+            document.getElementById('isbn').value = "";
+            document.getElementById('new-stock').value = "";
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour du stock :", error);
+            alert('Impossible de mettre à jour le stock.');
+        }
+    } else {
+        alert('Veuillez entrer une quantité valide.');
+    }
 });
+
 // Initialiser la liste des livres avec écoute en temps réel
 function initializeBookListListener() {
-  const bookListElement = document.getElementById('book-list');
-  onValue(booksDataRef, (booksDataSnapshot) => {
-    onValue(stocksRef, (stocksSnapshot) => {
-      const booksData = booksDataSnapshot.val() || {};
-      const stocks = stocksSnapshot.val() || {};
-      bookListElement.innerHTML = '';
-      // Réinitialiser la liste
-      for (const isbn in booksData) {
-        const bookData = booksData[isbn];
-        const stock = stocks[isbn] || 0;
-        const bookItem = document.createElement('div');
-        bookItem.classList.add('book-item');
-        bookItem.innerHTML = `
-          <div class="book-title">Titre : ${bookData.title}</div>
-          <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
-          <div class="book-summary">Résumé : ${bookData.summary}</div>
-          <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
-	<span class="book-author">${bookData.author || 'Auteur inconnu'}</span>
-        `;
-        bookListElement.appendChild(bookItem);
-      }
+    const bookListElement = document.getElementById('book-list');
+    onValue(booksDataRef, (booksDataSnapshot) => {
+        onValue(stocksRef, (stocksSnapshot) => {
+            const booksData = booksDataSnapshot.val() || {};
+            const stocks = stocksSnapshot.val() || {};
+            bookListElement.innerHTML = ''; // Réinitialiser la liste
+            for (const isbn in booksData) {
+                const bookData = booksData[isbn];
+                const stock = stocks[isbn] || 0;
+                const bookItem = document.createElement('div');
+                bookItem.classList.add('book-item');
+                bookItem.innerHTML = `
+                    <span class="book-title">${bookData.title}</span>
+                    <span class="book-author">${bookData.author}</span>
+                    <span class="stock-info">${stock > 0 ? `En stock : ${stock} exemplaires` : 'Hors stock'}</span>
+                    <button class="delete-button">Supprimer</button>
+                `;
+                bookItem.querySelector('.delete-button').addEventListener('click', function() {
+                    deleteBook(isbn);
+                });
+                bookListElement.appendChild(bookItem);
+            }
+        });
     });
-  });
 }
+
+// Lancer l'initialisation de la liste dès le chargement du script
+initializeBookListListener();
 
 // Fonction pour supprimer un livre
 function deleteBook(isbn) {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le livre avec l'ISBN ${isbn} ?`)) {
-        Promise.all([
-            set(child(stocksRef, isbn), null), // Supprime le stock
-            set(child(booksDataRef, isbn), null) // Supprime les données du livre
-        ])
+    remove(child(booksDataRef, isbn))
         .then(() => {
-            alert('Livre supprimé avec succès.');
+            alert("Livre supprimé avec succès !");
         })
         .catch(error => {
-            console.error('Erreur lors de la suppression :', error);
+            console.error("Erreur lors de la suppression du livre :", error);
+            alert("Erreur lors de la suppression.");
         });
-    }
 }
-
-// Filtrer les livres par titre ou auteur
-function filterBookList() {
-    const searchText = document.getElementById('search-book').value.toLowerCase();
-    const bookItems = document.querySelectorAll('#book-list .book-item');
-
-    bookItems.forEach(item => {
-        const title = item.querySelector('.book-title').textContent.toLowerCase();
-        const author = item.querySelector('div:nth-child(2)').textContent.toLowerCase();
-        if (title.includes(searchText) || author.includes(searchText)) {
-            item.style.display = 'block';
-        } else {
-            item.style.display = 'none';
-        }
-    });
-}
-
-// Initialiser la liste des livres au chargement
-initializeBookListListener();
-
-// Ajouter un écouteur pour la barre de recherche
-document.getElementById('search-book').addEventListener('input', filterBookList);
