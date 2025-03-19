@@ -151,6 +151,7 @@ function initializeBookListListener() {
           <div class="book-summary">Résumé : ${bookData.summary}</div>
           <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
 	<span class="book-author">${bookData.author || 'Auteur inconnu'}</span>
+ 	 <button class="delete-button" onclick="deleteBook('${isbn}')">Supprimer</button>
         `;
         bookListElement.appendChild(bookItem);
       }
