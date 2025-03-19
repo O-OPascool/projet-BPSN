@@ -153,7 +153,7 @@ function initializeBookListListener() {
 	<span class="book-author">${bookData.author || 'Auteur inconnu'}</span>
  	 <button class="delete-button" onclick="deleteBook('${isbn}')">Supprimer</button>
         `;
-        bookListElement.appendChild(bookItem);
+         bookListElement.innerHTML += bookItem;
       }
     });
   });
