@@ -183,7 +183,7 @@ function deleteBook(isbn) {
 }
 
 // Rendre deleteBook globalement accessible
-window.deleteBook = deleteBook;
+window.showConfirmation = showConfirmation;
 
 document.getElementById('stock-form').addEventListener('submit', (event) => {
     event.preventDefault();
