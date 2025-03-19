@@ -27,6 +27,15 @@ function isValidISBN(isbn) {
     return (isbn.length === 10 || isbn.length === 13) && !isNaN(isbn);
 }
 
+// Fonction de confirmation
+function showConfirmation(message, callback) {
+    if (confirm(message)) {
+        callback(true);
+    } else {
+        callback(false);
+    }
+}
+
 // Gestion du formulaire de recherche
 document.getElementById('isbn-form').addEventListener('submit', async function (event) {
     event.preventDefault();
@@ -120,7 +129,7 @@ document.getElementById('stock-form').addEventListener('submit', async function 
       await set(child(stocksRef, isbn), newStock);
       alert('Stock mis à jour avec succès !');
       displayStock(isbn);
-      // Réinitialiser les champs de saisie 
+      // Réinitialiser les champs de saisie
       document.getElementById('isbn').value = "";
       document.getElementById('new-stock').value = "";
     } catch (error) {
@@ -131,6 +140,7 @@ document.getElementById('stock-form').addEventListener('submit', async function 
     alert('Veuillez entrer une quantité valide.');
   }
 });
+
 // Initialiser la liste des livres avec écoute en temps réel
 function initializeBookListListener() {
   const bookListElement = document.getElementById('book-list');
@@ -150,8 +160,8 @@ function initializeBookListListener() {
           <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
           <div class="book-summary">Résumé : ${bookData.summary}</div>
           <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
-	<span class="book-author">${bookData.author || 'Auteur inconnu'}</span>
- 	 <button class="delete-button" onclick="deleteBook('${isbn}')">Supprimer</button>
+          <span class="book-author">${bookData.author || 'Auteur inconnu'}</span>
+          <button class="delete-button" onclick="deleteBook('${isbn}')">Supprimer</button>
         `;
          bookListElement.innerHTML += bookItem;
       }
@@ -211,12 +221,3 @@ initializeBookListListener();
 
 // Ajouter un écouteur pour la barre de recherche
 document.getElementById('search-book').addEventListener('input', filterBookList);
-
-function showConfirmation(message, callback) {
-    if (confirm(message)) {
-        callback(true);
-    } else {
-        callback(false);
-    }
-};
-
