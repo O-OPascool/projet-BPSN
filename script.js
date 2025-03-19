@@ -172,6 +172,14 @@ function deleteBook(isbn) {
     });
 }
 
+function showConfirmation(message, callback) {
+    if (confirm(message)) {
+        callback(true);
+    } else {
+        callback(false);
+    }
+}
+
 // Rendre deleteBook globalement accessible
 window.deleteBook = deleteBook;
 
