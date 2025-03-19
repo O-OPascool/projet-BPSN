@@ -172,14 +172,6 @@ function deleteBook(isbn) {
     });
 }
 
-function showConfirmation(message, callback) {
-    if (confirm(message)) {
-        callback(true);
-    } else {
-        callback(false);
-    }
-}
-
 // Rendre deleteBook globalement accessible
 window.deleteBook = deleteBook;
 
@@ -219,3 +211,12 @@ initializeBookListListener();
 
 // Ajouter un écouteur pour la barre de recherche
 document.getElementById('search-book').addEventListener('input', filterBookList);
+
+function showConfirmation(message, callback) {
+    if (confirm(message)) {
+        callback(true);
+    } else {
+        callback(false);
+    }
+};
+
