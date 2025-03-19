@@ -158,20 +158,60 @@ function initializeBookListListener() {
   });
 }
 
-// Fonction pour supprimer un livre
+// Fonction pour supprimer un livre par son ISBN
 function deleteBook(isbn) {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le livre avec l'ISBN ${isbn} ?`)) {
-        Promise.all([
-            set(child(stocksRef, isbn), null), // Supprime le stock
-            set(child(booksDataRef, isbn), null) // Supprime les données du livre
-        ])
-        .then(() => {
-            alert('Livre supprimé avec succès.');
-        })
-        .catch(error => {
-            console.error('Erreur lors de la suppression :', error);
+    showConfirmation(`Confirmer la suppression du livre avec l'ISBN ${isbn} ?`, async (confirmed) => {
+        if (confirmed) {
+            await Promise.all([
+                set(child(stocksRef, isbn), null),
+                set(child(booksDataRef, isbn), null)
+            ])
+            .then(() => alert(`Livre supprimé.`))
+            .catch(error => console.error('Erreur suppression :', error));
+        }
+    });
+}
+
+// Rendre deleteBook globalement accessible
+window.deleteBook = deleteBook;
+
+document.getElementById('stock-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const newStock = parseInt(document.getElementById('new-stock').value);
+    const isbn = document.getElementById('isbn').value.trim();
+
+    if (isValidISBN(isbn) && newStock >= 0) {
+        showConfirmation(`Confirmer la mise à jour du stock pour ${isbn} ?`, async (confirmed) => {
+            if (confirmed) {
+                await set(child(stocksRef, isbn), newStock);
+                alert('Stock mis à jour.');
+            }
         });
     }
+});
+
+function initializeBookListListener() {
+    const bookListElement = document.getElementById('book-list');
+    onValue(booksDataRef, (booksSnapshot) => {
+        onValue(stocksRef, (stocksSnapshot) => {
+            bookListElement.innerHTML = '';
+            const books = booksSnapshot.val() || {};
+            const stocks = stocksSnapshot.val() || {};
+            Object.keys(books).forEach((isbn) => {
+                const book = books[isbn];
+                const stock = stocks[isbn] || 0;
+                const bookItem = `
+                    <div class="book-item">
+                        <div><strong>${book.title}</strong></div>
+                        <div>Auteur : ${book.author}</div>
+                        <div>Résumé : ${book.summary}</div>
+                        <div>Stock : ${stock > 0 ? `${stock} disponibles` : 'Hors stock'}</div>
+                        <button class="delete-button" onclick="deleteBook('${isbn}')">Supprimer</button>
+                    </div>`;
+                bookListElement.innerHTML += bookItem;
+            });
+        });
+    });
 }
 
 // Filtrer les livres par titre ou auteur
