@@ -159,3 +159,11 @@ button:hover {
     border-radius: 4px; /* Coins arrondis */
 }
 
+.total-books {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+
