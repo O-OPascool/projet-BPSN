@@ -9,21 +9,19 @@
 <body>
     <div class="container">
         <h1>Recherche et Gestion de Stock</h1>
+        
         <!-- Formulaire pour rechercher un livre via ISBN -->
         <form id="isbn-form" class="form">
-   	 <input type="text" id="isbn" placeholder="Entrez un ISBN (10 ou 13 chiffres)" required 
-           oninvalid="this.setCustomValidity('Veuillez entrer un ISBN valide (10 ou 13 chiffres).')" 
-           oninput="this.setCustomValidity('')">
-    	<button type="submit">Rechercher</button>
-	</form>
-
+            <input type="text" id="isbn" placeholder="Entrez un ISBN (10 ou 13 chiffres)" required>
+            <button type="submit">Rechercher</button>
+        </form>
 
         <div id="book-info" class="hidden">
             <img id="cover" src="" alt="Image de couverture">
             <p><strong>Titre :</strong> <span id="title"></span></p>
             <p><strong>Auteur :</strong> <span id="author"></span></p>
             <p><strong>Résumé :</strong> <span id="summary"></span></p>
-            <p><strong>Disponibilité :</strong> <span id="stock" class="stock-info">Vérification en cours...</span></p>
+            <p><strong>Disponibilité :</strong> <span id="stock" class="stock-info">Vérification en cours...</span></p>
 
             <!-- Formulaire pour mettre à jour le stock -->
             <form id="stock-form" class="stock-form">
@@ -33,29 +31,15 @@
             </form>
         </div>
 
-        <!-- Liste des livres -->
         <h2>Liste des Livres Disponibles</h2>
         <input type="text" id="search-book" placeholder="Rechercher par titre ou auteur...">
         <div id="book-list"></div>
 
-        <!-- Modal de confirmation -->
-        <div id="confirmation-modal" class="modal hidden">
-            <div class="modal-content">
-                <p id="confirmation-message"></p>
-                <div class="modal-buttons">
-                    <button id="confirm-yes" class="confirm-button">Oui</button>
-                    <button id="confirm-no" class="cancel-button">Non</button>
-                </div>
-            </div>
-        </div>
+        <!-- Affichage du nombre total de livres -->
+        <div id="total-books-count" class="total-books">Total des livres disponibles : 0</div>
+
     </div>
 
     <script type="module" src="script.js"></script>
 </body>
-<div class="footer">
-    <img src="image.png" alt="Logo" class="footer-logo">
-    <span>Pascal</span><br>
-    <span>lmdksùg</span>
-</div>
-
 </html>
