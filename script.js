@@ -190,30 +190,6 @@ document.getElementById('stock-form').addEventListener('submit', (event) => {
     }
 });
 
-function initializeBookListListener() {
-    const bookListElement = document.getElementById('book-list');
-    onValue(booksDataRef, (booksSnapshot) => {
-        onValue(stocksRef, (stocksSnapshot) => {
-            bookListElement.innerHTML = '';
-            const books = booksSnapshot.val() || {};
-            const stocks = stocksSnapshot.val() || {};
-            Object.keys(books).forEach((isbn) => {
-                const book = books[isbn];
-                const stock = stocks[isbn] || 0;
-                const bookItem = `
-                    <div class="book-item">
-                        <div><strong>${book.title}</strong></div>
-                        <div>Auteur : ${book.author}</div>
-                        <div>Résumé : ${book.summary}</div>
-                        <div>Stock : ${stock > 0 ? `${stock} disponibles` : 'Hors stock'}</div>
-                        <button class="delete-button" onclick="deleteBook('${isbn}')">Supprimer</button>
-                    </div>`;
-                bookListElement.innerHTML += bookItem;
-            });
-        });
-    });
-}
-
 // Filtrer les livres par titre ou auteur
 function filterBookList() {
     const searchText = document.getElementById('search-book').value.toLowerCase();
