@@ -159,7 +159,6 @@ function initializeBookListListener() {
   });
 }
 
-// Fonction pour supprimer un livre par son ISBN
 function deleteBook(isbn) {
     showConfirmation(`Confirmer la suppression du livre avec l'ISBN ${isbn} ?`, async (confirmed) => {
         if (confirmed) {
