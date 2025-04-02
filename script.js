@@ -1,7 +1,6 @@
 // Import des modules Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
 import { getDatabase, ref, child, set, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // Configuration Firebase
 const firebaseConfig = {
@@ -139,6 +138,3 @@ function initializeBookListListener() {
 
 // Rendre la fonction deleteBook accessible globalement
 window.deleteBook = deleteBook;
-
-// Initialiser Speed Insights
-SpeedInsights();
