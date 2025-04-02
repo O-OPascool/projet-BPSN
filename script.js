@@ -90,8 +90,9 @@ function renderBookList(filter = '') {
         bookItem.appendChild(imgElement);
 
         const contentElement = document.createElement('div');
+        contentElement.classList.add('book-details');
         contentElement.innerHTML = `
-            <div class="book-title">Titre : ${bookData.title}</div>
+            <div class="book-title"><strong>Titre : ${bookData.title}</strong></div>
             <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
             <div class="book-summary">Résumé : ${bookData.summary}</div>
             <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
@@ -121,8 +122,10 @@ function deleteBook(isbn) {
     }
 }
 
-// Initialiser la liste des livres
-initializeBookListListener();
+// Événement pour filtrer la liste via la barre de recherche
+document.getElementById('search-book').addEventListener('input', function() {
+    renderBookList(this.value.toLowerCase());
+});
 
 // Initialisation du listener pour mettre à jour la liste des livres
 function initializeBookListListener() {
@@ -130,11 +133,13 @@ function initializeBookListListener() {
         globalBooksData = booksDataSnapshot.val() || {};
         onValue(stocksRef, (stocksSnapshot) => {
             globalStocksData = stocksSnapshot.val() || {};
-            let filterValue = document.getElementById('search-book').value.toLowerCase();
-            renderBookList(filterValue);
+            renderBookList(document.getElementById('search-book').value.toLowerCase());
         });
     });
 }
+
+// Initialiser la liste des livres
+initializeBookListListener();
 
 // Rendre la fonction deleteBook accessible globalement
 window.deleteBook = deleteBook;
