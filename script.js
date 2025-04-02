@@ -22,61 +22,45 @@ const database = getDatabase(app);
 const stocksRef = ref(database, 'stocks');
 const booksDataRef = ref(database, 'booksData');
 
-// Fonction pour valider l'ISBN
+// Validation ISBN
 function isValidISBN(isbn) {
     return (isbn.length === 10 || isbn.length === 13) && !isNaN(isbn);
 }
 
-// Fonction pour récupérer l'image de couverture avec fallback
+// Image couverture avec fallback
 function getCoverUrl(isbn) {
     return `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false`;
 }
 
 function setCoverImage(imgElement, isbn, defaultCover) {
     imgElement.src = getCoverUrl(isbn);
-
-    imgElement.onerror = function() {
-        this.style.display = 'none';  // Masque l'image si non disponible
-    };
+    imgElement.onerror = () => { imgElement.style.display = 'none'; };
 }
 
-// Fonction pour normaliser les noms d'auteur
+// Normalisation auteurs avancée
 function normalizeAuthorName(name) {
-    return name.toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
+    return name.toLowerCase().replace(/[\.,]/g, '').replace(/\s+/g, ' ').trim();
 }
 
-// Variables globales pour stocker les données récupérées
 let globalBooksData = {};
 let globalStocksData = {};
 
-// Fonction pour mettre à jour le nombre total de livres disponibles
 function updateTotalBooksCount() {
-    let totalCount = 0;
-    for (const isbn in globalStocksData) {
-        totalCount += globalStocksData[isbn] || 0;
-    }
+    const totalCount = Object.values(globalStocksData).reduce((acc, val) => acc + (val || 0), 0);
     document.getElementById('total-books-count').innerText = `Total des livres disponibles : ${totalCount}`;
 }
 
-// Fonction de rendu de la liste des livres avec filtrage
 function renderBookList(filter = '') {
     const bookListElement = document.getElementById('book-list');
     bookListElement.innerHTML = '';
 
-    let uniqueAuthors = {};
+    const normalizedFilter = filter.toLowerCase();
 
     for (const isbn in globalBooksData) {
         const bookData = globalBooksData[isbn];
         const normalizedAuthor = normalizeAuthorName(bookData.author || 'Auteur inconnu');
 
-        if (!uniqueAuthors[normalizedAuthor]) {
-            uniqueAuthors[normalizedAuthor] = bookData.author;
-        }
-
-        bookData.author = uniqueAuthors[normalizedAuthor];
-
-        if (filter && !((bookData.title && bookData.title.toLowerCase().includes(filter)) ||
-            (bookData.author && bookData.author.toLowerCase().includes(filter)))) {
+        if (filter && !(bookData.title.toLowerCase().includes(normalizedFilter) || normalizedAuthor.includes(normalizedFilter))) {
             continue;
         }
 
@@ -107,39 +91,54 @@ function renderBookList(filter = '') {
     updateTotalBooksCount();
 }
 
-// Fonction pour supprimer un livre
 function deleteBook(isbn) {
     if (confirm(`Confirmer la suppression du livre avec l'ISBN ${isbn} ?`)) {
         Promise.all([
             set(child(stocksRef, isbn), null),
             set(child(booksDataRef, isbn), null)
-        ])
-        .then(() => {
+        ]).then(() => {
             alert(`Livre supprimé.`);
             updateTotalBooksCount();
-        })
-        .catch(error => console.error('Erreur suppression :', error));
+        }).catch(console.error);
     }
 }
 
-// Événement pour filtrer la liste via la barre de recherche
-document.getElementById('search-book').addEventListener('input', function() {
-    renderBookList(this.value.toLowerCase());
+// Barre recherche principale pour ISBN
+const stockForm = document.getElementById('stock-form');
+stockForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const isbn = document.getElementById('isbn').value.trim();
+    const newStock = parseInt(document.getElementById('new-stock').value, 10);
+
+    if (!isValidISBN(isbn)) return alert('ISBN non valide.');
+
+    if (newStock >= 0) {
+        set(child(stocksRef, isbn), newStock).then(() => {
+            alert('Stock mis à jour.');
+            updateTotalBooksCount();
+        });
+    } else {
+        alert('Quantité invalide.');
+    }
 });
 
-// Initialisation du listener pour mettre à jour la liste des livres
+// Barre de recherche filtrage
+const searchInput = document.getElementById('search-book');
+searchInput.addEventListener('input', () => {
+    renderBookList(searchInput.value);
+});
+
+// Initialisation listener Firebase
 function initializeBookListListener() {
-    onValue(booksDataRef, (booksDataSnapshot) => {
-        globalBooksData = booksDataSnapshot.val() || {};
-        onValue(stocksRef, (stocksSnapshot) => {
-            globalStocksData = stocksSnapshot.val() || {};
-            renderBookList(document.getElementById('search-book').value.toLowerCase());
+    onValue(booksDataRef, snapshot => {
+        globalBooksData = snapshot.val() || {};
+        onValue(stocksRef, snap => {
+            globalStocksData = snap.val() || {};
+            renderBookList(searchInput.value);
         });
     });
 }
 
-// Initialiser la liste des livres
 initializeBookListListener();
-
-// Rendre la fonction deleteBook accessible globalement
 window.deleteBook = deleteBook;
