@@ -1,17 +1,18 @@
 // Import des modules Firebase
-import { initializeApp } from \"https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js\";
-import { getDatabase, ref, child, set, get, onValue } from \"https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js\";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
+import { getDatabase, ref, child, set, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // Configuration Firebase
 const firebaseConfig = {
-    apiKey: \"AIzaSyDKEewyRf8TgMjXCsfHfzvnCpBUG-GYDig\",
-    authDomain: \"bpsn-74f1b.firebaseapp.com\",
-    databaseURL: \"https://bpsn-74f1b-default-rtdb.europe-west1.firebasedatabase.app\",
-    projectId: \"bpsn-74f1b\",
-    storageBucket: \"bpsn-74f1b.firebasestorage.app\",
-    messagingSenderId: \"1057707303676\",
-    appId: \"1:1057707303676:web:63dd292678dead41c2ed79\",
-    measurementId: \"G-DZGXBJERKQ\"
+    apiKey: "AIzaSyDKEewyRf8TgMjXCsfHfzvnCpBUG-GYDig",
+    authDomain: "bpsn-74f1b.firebaseapp.com",
+    databaseURL: "https://bpsn-74f1b-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "bpsn-74f1b",
+    storageBucket: "bpsn-74f1b.firebasestorage.app",
+    messagingSenderId: "1057707303676",
+    appId: "1:1057707303676:web:63dd292678dead41c2ed79",
+    measurementId: "G-DZGXBJERKQ"
 };
 
 // Initialisation Firebase
@@ -87,17 +88,19 @@ function renderBookList(filter = '') {
         const imgElement = document.createElement('img');
         imgElement.classList.add('book-cover');
         setCoverImage(imgElement, isbn, 'default_cover.jpg');
+        bookItem.appendChild(imgElement);
 
-        bookItem.innerHTML = `
-            <div class=\"book-title\">Titre : ${bookData.title}</div>
-            <div class=\"book-identifier\">ISBN : <strong>${isbn}</strong></div>
-            <div class=\"book-summary\">Résumé : ${bookData.summary}</div>
-            <div class=\"stock-info\">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
-            <span class=\"book-author\">Auteur : ${bookData.author}</span>
-            <button class=\"delete-button\" onclick=\"deleteBook('${isbn}')\">Supprimer</button>
+        const contentElement = document.createElement('div');
+        contentElement.innerHTML = `
+            <div class="book-title">Titre : ${bookData.title}</div>
+            <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
+            <div class="book-summary">Résumé : ${bookData.summary}</div>
+            <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
+            <span class="book-author">Auteur : ${bookData.author}</span>
+            <button class="delete-button" onclick="deleteBook('${isbn}')">Supprimer</button>
         `;
+        bookItem.appendChild(contentElement);
 
-        bookItem.prepend(imgElement);
         bookListElement.appendChild(bookItem);
     }
 
@@ -119,6 +122,9 @@ function deleteBook(isbn) {
     }
 }
 
+// Initialiser la liste des livres
+initializeBookListListener();
+
 // Initialisation du listener pour mettre à jour la liste des livres
 function initializeBookListListener() {
     onValue(booksDataRef, (booksDataSnapshot) => {
@@ -131,14 +137,8 @@ function initializeBookListListener() {
     });
 }
 
-// Gestion de la mise à jour du stock
-// Assurez-vous que votre gestionnaire d'événement de mise à jour du stock reste inchangé
-
-// Événement pour filtrer la liste via la barre de recherche
-// Assurez-vous que votre gestionnaire de recherche reste inchangé
-
-// Initialiser la liste des livres
-initializeBookListListener();
-
 // Rendre la fonction deleteBook accessible globalement
 window.deleteBook = deleteBook;
+
+// Initialiser Speed Insights
+SpeedInsights();
