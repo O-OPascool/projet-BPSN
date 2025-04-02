@@ -113,14 +113,20 @@ stockForm.addEventListener('submit', (e) => {
 
     if (!isValidISBN(isbn)) return alert('ISBN non valide.');
 
-    if (newStock >= 0) {
-        set(child(stocksRef, isbn), newStock).then(() => {
-            alert('Stock mis à jour.');
-            updateTotalBooksCount();
-        });
-    } else {
-        alert('Quantité invalide.');
-    }
+    get(child(booksDataRef, isbn)).then(snapshot => {
+        if (snapshot.exists()) {
+            if (newStock >= 0) {
+                set(child(stocksRef, isbn), newStock).then(() => {
+                    alert('Stock mis à jour.');
+                    updateTotalBooksCount();
+                });
+            } else {
+                alert('Quantité invalide.');
+            }
+        } else {
+            alert('Le livre n\'existe pas dans la base de données. Veuillez d\'abord l\'ajouter.');
+        }
+    });
 });
 
 // Barre de recherche filtrage
