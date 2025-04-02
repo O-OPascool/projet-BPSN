@@ -29,39 +29,53 @@ function isValidISBN(isbn) {
 
 // 🔹 Fonction pour mettre à jour le nombre total de livres disponibles
 function updateTotalBooksCount() {
-    onValue(stocksRef, (snapshot) => {
-        const stocks = snapshot.val() || {};
-        let totalCount = Object.values(stocks).reduce((sum, stock) => sum + (stock || 0), 0);
-        document.getElementById('total-books-count').innerText = `Total des livres disponibles : ${totalCount}`;
-    });
+    let totalCount = 0;
+    for (const isbn in globalStocksData) {
+        totalCount += globalStocksData[isbn] || 0;
+    }
+    document.getElementById('total-books-count').innerText = `Total des livres disponibles : ${totalCount}`;
 }
 
-// 🔹 Modification de `initializeBookListListener()` pour mettre à jour le nombre total de livres disponibles
-function initializeBookListListener() {
+// Variables globales pour stocker les données récupérées
+let globalBooksData = {};
+let globalStocksData = {};
+
+// Fonction de rendu de la liste des livres avec filtrage
+function renderBookList(filter = '') {
     const bookListElement = document.getElementById('book-list');
+    bookListElement.innerHTML = '';
+    for (const isbn in globalBooksData) {
+        const bookData = globalBooksData[isbn];
+        // Application du filtre sur le titre et l'auteur
+        if (filter && !((bookData.title && bookData.title.toLowerCase().includes(filter)) ||
+                        (bookData.author && bookData.author.toLowerCase().includes(filter)))) {
+            continue;
+        }
+        const stock = globalStocksData[isbn] || 0;
+        const bookItem = document.createElement('div');
+        bookItem.classList.add('book-item');
+        bookItem.innerHTML = `
+            <img class="book-cover" src="${bookData.cover || 'default_cover.jpg'}" alt="Couverture de ${bookData.title}" style="max-width:100px; display:block; margin-bottom:10px;">
+            <div class="book-title">Titre : ${bookData.title}</div>
+            <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
+            <div class="book-summary">Résumé : ${bookData.summary}</div>
+            <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
+            <span class="book-author">Auteur : ${bookData.author || 'Auteur inconnu'}</span>
+            <button class="delete-button" onclick="deleteBook('${isbn}')">Supprimer</button>
+        `;
+        bookListElement.appendChild(bookItem);
+    }
+    updateTotalBooksCount();
+}
+
+// 🔹 Initialisation du listener pour mettre à jour la liste des livres
+function initializeBookListListener() {
     onValue(booksDataRef, (booksDataSnapshot) => {
+        globalBooksData = booksDataSnapshot.val() || {};
         onValue(stocksRef, (stocksSnapshot) => {
-            const booksData = booksDataSnapshot.val() || {};
-            const stocks = stocksSnapshot.val() || {};
-            bookListElement.innerHTML = '';
-
-            for (const isbn in booksData) {
-                const bookData = booksData[isbn];
-                const stock = stocks[isbn] || 0;
-                const bookItem = document.createElement('div');
-                bookItem.classList.add('book-item');
-                bookItem.innerHTML = `
-                    <div class="book-title">Titre : ${bookData.title}</div>
-                    <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
-                    <div class="book-summary">Résumé : ${bookData.summary}</div>
-                    <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
-                    <span class="book-author">${bookData.author || 'Auteur inconnu'}</span>
-                    <button class="delete-button" onclick="deleteBook('${isbn}')">Supprimer</button>
-                `;
-                bookListElement.appendChild(bookItem);
-            }
-
-            updateTotalBooksCount(); // 🔹 Mettre à jour le total après chaque mise à jour de la liste
+            globalStocksData = stocksSnapshot.val() || {};
+            let filterValue = document.getElementById('search-book').value.toLowerCase();
+            renderBookList(filterValue);
         });
     });
 }
@@ -75,7 +89,7 @@ function deleteBook(isbn) {
         ])
         .then(() => {
             alert(`Livre supprimé.`);
-            updateTotalBooksCount(); // 🔹 Mettre à jour le total après suppression
+            updateTotalBooksCount();
         })
         .catch(error => console.error('Erreur suppression :', error));
     }
@@ -96,15 +110,21 @@ document.getElementById('stock-form').addEventListener('submit', async function 
         if (confirm(`Confirmer la mise à jour du stock pour ${isbn} ?`)) {
             await set(child(stocksRef, isbn), newStock);
             alert('Stock mis à jour.');
-            displayStock(isbn);
-            updateTotalBooksCount(); // 🔹 Mettre à jour le total après modification du stock
+            // displayStock(isbn); // La fonction displayStock n'est pas définie ; à implémenter si besoin.
+            updateTotalBooksCount();
         }
     } else {
         alert('Veuillez entrer une quantité valide.');
     }
 });
 
-// Rendre deleteBook accessible globalement
+// Événement pour filtrer la liste via la barre de recherche
+document.getElementById('search-book').addEventListener('input', function() {
+    let filterValue = this.value.toLowerCase();
+    renderBookList(filterValue);
+});
+
+// Rendre la fonction deleteBook accessible globalement
 window.deleteBook = deleteBook;
 
 // Initialiser la liste des livres
