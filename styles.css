@@ -13,108 +13,128 @@ body {
     background-attachment: fixed; /* L'image reste fixe même si on scroll */
 }
 
-/* Styles pour le conteneur principal */
+/* Conteneur principal */
 .container {
-    width: 90%; /* Largeur de 90% */
-    max-width: 800px; /* Largeur maximale de 800 pixels */
-    margin: 20px auto; /* Marge extérieure automatique en haut/bas et de 20 pixels à gauche/droite */
-    background: #fff; /* Fond blanc */
-    padding: 20px; /* Marge intérieure de 20 pixels */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Ombre légère */
-    border-radius: 8px; /* Coins arrondis */
-    background-color: rgba(255, 255, 255, 0.8); /* Fond blanc avec 80% d'opacité */
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
 }
 
-/* Styles pour le titre principal */
+/* Titre principal */
 h1 {
-    text-align: center; /* Texte centré */
-    color: #4CAF50; /* Couleur verte */
+    text-align: center;
+    color: #4CAF50;
 }
 
-/* Styles pour les formulaires */
+/* Sous-titre */
+h2 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+/* Formulaires génériques */
 .form, .stock-form {
-    display: flex; /* Utilisation du modèle de boîte flexible */
-    flex-direction: column; /* Alignement vertical des éléments */
-    align-items: center; /* Alignement horizontal centré */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
-/* Styles pour les champs de saisie de texte et de nombre */
+/* Champs de saisie texte/number */
 input[type="text"], input[type="number"] {
-    width: 80%; /* Largeur de 80% */
-    padding: 10px; /* Marge intérieure de 10 pixels */
-    margin: 10px 0; /* Marge extérieure de 10 pixels en haut/bas et de 0 à gauche/droite */
-    border: 1px solid #ccc; /* Bordure grise de 1 pixel */
-    border-radius: 4px; /* Coins arrondis */
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
-/* Styles pour les boutons */
+/* Boutons */
 button {
-    padding: 10px 15px; /* Marge intérieure de 10 pixels en haut/bas et de 15 pixels à gauche/droite */
-    border: none; /* Pas de bordure */
-    border-radius: 4px; /* Coins arrondis */
-    background-color: #4CAF50; /* Couleur de fond verte */
-    color: white; /* Texte en blanc */
-    cursor: pointer; /* Curseur en forme de main au survol */
-    transition: background-color 0.3s; /* Transition fluide de la couleur de fond */
-    width: 100px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 130px;
+    margin-bottom: 10px;
 }
-
-/* Styles pour le survol des boutons */
 button:hover {
-    background-color: #45a049; /* Couleur de fond légèrement plus foncée au survol */
+    background-color: #45a049;
 }
 
-/* Styles pour la section d'informations sur le livre */
+/* Section d'infos du livre recherché */
 #book-info {
-    margin-top: 20px; /* Marge supérieure de 20 pixels */
-    text-align: center; /* Texte centré */
+    margin-top: 20px;
+    text-align: center;
 }
 
-/* Styles pour l'image de couverture */
 #cover {
-    max-width: 100%; /* Largeur maximale de 100% */
-    height: auto; /* Hauteur automatique pour conserver les proportions */
-    border-radius: 4px; /* Coins arrondis */
+    max-width: 100px;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-/* Styles pour les informations de stock */
+/* Info stock */
 .stock-info {
-    font-weight: bold; /* Texte en gras */
+    font-weight: bold;
 }
 
-/* Styles pour les indicateurs de stock */
 .in-stock {
-    color: green; /* Couleur verte pour "en stock" */
+    color: green;
 }
-
 .out-of-stock {
-    color: red; /* Couleur rouge pour "hors stock" */
+    color: red;
 }
 
-/* Styles pour la liste des livres */
+/* Liste des livres */
 #book-list {
-    margin-top: 20px; /* Marge supérieure de 20 pixels */
-    padding: 10px; /* Marge intérieure de 10 pixels */
-    border: 1px solid #ccc; /* Bordure grise de 1 pixel */
-    border-radius: 4px; /* Coins arrondis */
-    background-color: #fafafa; /* Couleur de fond gris clair */
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fafafa;
 }
 
-/* Styles pour les éléments de la liste des livres */
+/* Elément unique d'un livre */
 .book-item {
-    border-bottom: 1px solid #ddd; /* Bordure inférieure grise de 1 pixel */
-    padding: 10px 0; /* Marge intérieure de 10 pixels en haut/bas et de 0 à gauche/droite */
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+    display: flex;
+    gap: 10px;
 }
-
-/* Styles pour le dernier élément de la liste des livres (pas de bordure inférieure) */
 .book-item:last-child {
     border-bottom: none;
 }
 
-/* Styles pour le titre du livre */
+/* Couverture dans la liste */
+.book-cover {
+    max-width: 80px;
+    display: block;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.book-details {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Titre livre */
 .book-title {
-    font-weight: bold; /* Texte en gras */
-    color: #4CAF50; /* Couleur verte */
+    font-weight: bold;
+    color: #4CAF50;
 }
 
 .book-author {
@@ -124,41 +144,31 @@ button:hover {
     margin-top: 5px;
 }
 
-/* Styles pour la marge supérieure des informations de stock */
-.stock-info {
-    margin-top: 5px; /* Marge supérieure de 5 pixels */
-}
-
-/* Style pour le bouton Supprimer */
 .delete-button {
-    background-color: #d9534f; /* Couleur de fond rouge */
-    color: white; /* Texte en blanc */
-    border: none; /* Pas de bordure */
-    padding: 5px 10px; /* Marge intérieure de 5 pixels en haut/bas et de 10 pixels à gauche/droite */
-    border-radius: 4px; /* Coins arrondis */
-    cursor: pointer; /* Curseur en forme de main au survol */
-    margin-top: 5px; /* Marge supérieure de 5 pixels */
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 5px;
+    width: auto;
 }
-
-/* Styles pour le survol du bouton Supprimer */
 .delete-button:hover {
-    background-color: #c9302c; /* Couleur de fond légèrement plus foncée au survol */
+    background-color: #c9302c;
 }
 
-/* Classe pour masquer les éléments */
-.hidden {
-    display: none;
-}
-
-/* Styles pour la barre de recherche */
+/* Barre recherche titre/auteur */
 #search-book {
-    width: 50%; /* Largeur de 50% */
-    padding: 10px; /* Marge intérieure de 10 pixels */
-    margin: 10px 0; /* Marge extérieure de 10 pixels en haut/bas et de 0 à gauche/droite */
-    border: 1px solid #ccc; /* Bordure grise de 1 pixel */
-    border-radius: 4px; /* Coins arrondis */
+    width: 60%;
+    padding: 10px;
+    margin: 10px auto;
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
+/* Affichage du total */
 .total-books {
     margin-top: 20px;
     font-size: 18px;
@@ -167,5 +177,7 @@ button:hover {
     text-align: center;
 }
 
-
-
+/* Classe utilitaire pour masquer des éléments */
+.hidden {
+    display: none;
+}
