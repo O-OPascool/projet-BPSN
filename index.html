@@ -16,6 +16,7 @@
             <button type="submit">Rechercher</button>
         </form>
 
+        <!-- Informations sur le livre recherché -->
         <div id="book-info" class="hidden">
             <img id="cover" src="" alt="Image de couverture">
             <p><strong>Titre :</strong> <span id="title"></span></p>
@@ -23,7 +24,7 @@
             <p><strong>Résumé :</strong> <span id="summary"></span></p>
             <p><strong>Disponibilité :</strong> <span id="stock" class="stock-info">Vérification en cours...</span></p>
 
-            <!-- Formulaire pour mettre à jour le stock -->
+            <!-- Formulaire pour mettre à jour le stock du livre recherché -->
             <form id="stock-form" class="stock-form">
                 <label for="new-stock">Mettre à jour le stock :</label>
                 <input type="number" id="new-stock" placeholder="Nombre d'exemplaires" required>
@@ -32,14 +33,17 @@
         </div>
 
         <h2>Liste des Livres Disponibles</h2>
+        <!-- Barre de recherche globale (titre/auteur) -->
         <input type="text" id="search-book" placeholder="Rechercher par titre ou auteur...">
+        
+        <!-- Liste complète des livres -->
         <div id="book-list"></div>
 
         <!-- Affichage du nombre total de livres -->
         <div id="total-books-count" class="total-books">Total des livres disponibles : 0</div>
-
     </div>
 
+    <!-- Script principal en mode module -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
