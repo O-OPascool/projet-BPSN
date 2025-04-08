@@ -1,161 +1,209 @@
 // script.js
+// Combinaison Google Books / Open Library, édition manuelle et gestion optimisée des couvertures
 
-// On écoute DOMContentLoaded pour s'assurer que le HTML est prêt
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
+import { getDatabase, ref, child, set, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDKE...",
+  authDomain: "bpsn-74f1b.firebaseapp.com",
+  databaseURL: "https://bpsn-74f1b-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bpsn-74f1b",
+  storageBucket: "bpsn-74f1b.firebasestorage.app",
+  messagingSenderId: "1057707303676",
+  appId: "1:1057707303676:web:63dd292678dead41c2ed79",
+  measurementId: "G-DZGXBJERKQ"
+};
+
+function convertISBN10toISBN13(isbn10) {
+  let core = isbn10.substring(0, 9);
+  let isbn13WithoutCheck = "978" + core;
+  let sum = 0;
+  for (let i = 0; i < isbn13WithoutCheck.length; i++) {
+    let digit = parseInt(isbn13WithoutCheck[i]);
+    sum += (i % 2 === 0 ? digit : digit * 3);
+  }
+  let remainder = sum % 10;
+  let checkDigit = remainder === 0 ? 0 : 10 - remainder;
+  return isbn13WithoutCheck + checkDigit;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  // Import des modules Firebase (V9) en mode module
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
-  import { getDatabase, ref, child, set, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
-
-  // Configuration Firebase
-  const firebaseConfig = {
-    apiKey: "XXX",
-    authDomain: "XXX.firebaseapp.com",
-    databaseURL: "https://XXX-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "XXX",
-    storageBucket: "XXX.appspot.com",
-    messagingSenderId: "XXX",
-    appId: "XXX",
-    measurementId: "XXX"
-  };
-
-  // Initialisation Firebase
   const app = initializeApp(firebaseConfig);
   const database = getDatabase(app);
 
-  // Références Firebase
   const stocksRef = ref(database, 'stocks');
   const booksDataRef = ref(database, 'booksData');
 
-  // -----------
-  // Fonctions
-  // -----------
+  const spinner = document.getElementById('spinner');
+  function showSpinner() { spinner.classList.remove('hidden'); }
+  function hideSpinner() { spinner.classList.add('hidden'); }
 
-  // Nettoie un ISBN (retire les tirets / espaces)
-  function sanitizeISBN(isbn) {
-    return isbn.replace(/[-\\s]/g, "");
+  const engineSelect = document.getElementById('search-engine');
+  if (engineSelect) {
+    const storedEngine = localStorage.getItem('search-engine');
+    if (storedEngine) { engineSelect.value = storedEngine; }
+    engineSelect.addEventListener('change', () => {
+      localStorage.setItem('search-engine', engineSelect.value);
+    });
   }
 
-  // Vérifie qu'un ISBN est valide
+  function sanitizeISBN(isbn) {
+    return isbn.replace(/[-\s]/g, "");
+  }
+
   function isValidISBN(isbn) {
     return (isbn.length === 10 || isbn.length === 13) && !isNaN(isbn);
   }
 
-  // Construction URL de couverture Open Library
-  function getCoverUrl(isbn) {
-    return `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false`;
-  }
-
-  // Affecte la couverture, masque si introuvable
-  function setCoverImage(imgElement, isbn, fallback = 'default_cover.jpg') {
-    imgElement.src = getCoverUrl(isbn);
+  // Fonction modifiée : si fallback est vide, on masque l'image
+  function setCoverImage(imgElement, isbn, fallback = 'https://via.placeholder.com/150x200?text=No+Cover') {
+    imgElement.src = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
     imgElement.onerror = () => {
-      // Si introuvable sur OpenLibrary, on tente un fallback local
-      imgElement.src = fallback;
-      // S'il est aussi introuvable en local, on masque
-      imgElement.onerror = () => {
+      if (fallback) {
+        imgElement.src = fallback;
+        imgElement.onerror = () => { imgElement.style.display = 'none'; };
+      } else {
         imgElement.style.display = 'none';
-      };
+      }
     };
   }
 
-  // Normalisation de l'auteur (pour éviter duplicats genre J.K. / Joanne K.)
   function normalizeAuthorName(name) {
-    return name
-      .toLowerCase()
-      .replace(/[\\.,]/g, '')
-      .replace(/\\s+/g, ' ')
-      .trim();
+    return name.toLowerCase().replace(/[.,]/g, '').replace(/\s+/g, ' ').trim();
   }
 
-  // Données globales
+  function parseVolumeInfo(volumeInfo) {
+    const title = volumeInfo.title || "Sans titre";
+    const author = (volumeInfo.authors && volumeInfo.authors.length > 0) ? volumeInfo.authors[0] : "Auteur inconnu";
+    const summary = volumeInfo.description || "Aucune information";
+    return { title, author, summary };
+  }
+
+  async function fetchBookDataFromAPIs(isbn) {
+    try {
+      const googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+      const googleData = await googleRes.json();
+      if (googleData.items && googleData.items.length > 0) {
+        return { googleBooksResults: googleData.items };
+      }
+    } catch (e) {
+      console.warn("Erreur Google Books:", e);
+    }
+    try {
+      const openRes = await fetch(`https://openlibrary.org/isbn/${isbn}.json`);
+      if (openRes.ok) {
+        const openData = await openRes.json();
+        const title = openData.title || "Sans titre";
+        let author = "Auteur inconnu";
+        let summary = "Aucune information";
+        if (typeof openData.by_statement === 'string') { author = openData.by_statement; }
+        if (typeof openData.description === 'string') { summary = openData.description; }
+        else if (typeof openData.description === 'object' && openData.description.value) { summary = openData.description.value; }
+        return { openLibraryResult: { title, author, summary } };
+      }
+    } catch (e) {
+      console.warn("Erreur Open Library:", e);
+    }
+    return null;
+  }
+
+  async function completeWithGoogleIfNeeded(isbn, baseData) {
+    let { title, author, summary } = baseData;
+    const MIN_SUMMARY_LENGTH = 50;
+    if (author === "Auteur inconnu" || summary.length < MIN_SUMMARY_LENGTH) {
+      try {
+        const googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+        const googleData = await googleRes.json();
+        if (googleData.items && googleData.items.length > 0) {
+          const volumeInfo = googleData.items[0].volumeInfo || {};
+          if (author === "Auteur inconnu" && volumeInfo.authors && volumeInfo.authors[0]) {
+            author = volumeInfo.authors[0];
+          }
+          const googleSummary = volumeInfo.description || "";
+          if (googleSummary.length > summary.length) {
+            summary = googleSummary;
+          }
+        }
+      } catch (err) {
+        console.warn("Impossible de compléter avec Google Books :", err);
+      }
+    }
+    return { title, author, summary };
+  }
+
   let globalBooksData = {};
   let globalStocksData = {};
 
-  // Met à jour l'affichage du total
   function updateTotalBooksCount() {
-    const totalCount = Object.values(globalStocksData).reduce((acc, val) => acc + (val || 0), 0);
+    const total = Object.values(globalStocksData).reduce((acc, val) => acc + (val || 0), 0);
     const totalElem = document.getElementById('total-books-count');
     if (totalElem) {
-      totalElem.textContent = `Total des livres disponibles : ${totalCount}`;
+      totalElem.textContent = `Total des livres disponibles : ${total}`;
     }
   }
 
-  // Affiche la liste de tous les livres, avec filtrage sur titre/auteur
   function renderBookList(filter = '') {
     const bookListElement = document.getElementById('book-list');
     if (!bookListElement) return;
-
     bookListElement.innerHTML = '';
     const normalizedFilter = filter.toLowerCase();
 
-    // Dictionnaire pour unifier les noms d'auteurs
-    let uniqueAuthors = {};
-
     for (const isbn in globalBooksData) {
-      const rawAuthor = globalBooksData[isbn].author || 'Auteur inconnu';
-      const normalizedAuthor = normalizeAuthorName(rawAuthor);
+      if (!globalBooksData.hasOwnProperty(isbn)) continue;
 
-      // Unifie l'auteur
-      if (!uniqueAuthors[normalizedAuthor]) {
-        uniqueAuthors[normalizedAuthor] = rawAuthor;
-      }
-      // Remplace la version stockée par la version unifiée
-      globalBooksData[isbn].author = uniqueAuthors[normalizedAuthor];
-
-      // Filtrage par titre / auteur
-      if (filter) {
-        const titleMatch = globalBooksData[isbn].title.toLowerCase().includes(normalizedFilter);
-        const authorMatch = normalizeAuthorName(globalBooksData[isbn].author).includes(normalizedFilter);
-        if (!titleMatch && !authorMatch) continue;
-      }
-
+      const title = globalBooksData[isbn].title || "Sans titre";
+      const author = globalBooksData[isbn].author || "Auteur inconnu";
+      const summary = globalBooksData[isbn].summary || "Aucune information";
       const stock = globalStocksData[isbn] || 0;
 
-      // Elément livre
+      if (filter) {
+        if (!title.toLowerCase().includes(normalizedFilter) &&
+            !author.toLowerCase().includes(normalizedFilter)) {
+          continue;
+        }
+      }
+
       const bookItem = document.createElement('div');
       bookItem.classList.add('book-item');
 
-      // Image de couverture
       const imgElement = document.createElement('img');
       imgElement.classList.add('book-cover');
-      setCoverImage(imgElement, isbn);
+      imgElement.loading = "lazy";
+      // Ici, on passe "" pour le fallback -> si la couverture n'est pas trouvée, on masque l'image
+      setCoverImage(imgElement, isbn, "");
       bookItem.appendChild(imgElement);
 
-      // Infos texte
-      const contentElement = document.createElement('div');
-      contentElement.classList.add('book-details');
-      contentElement.innerHTML = `
-        <div class="book-title"><strong>Titre : ${globalBooksData[isbn].title}</strong></div>
+      const contentEl = document.createElement('div');
+      contentEl.classList.add('book-details');
+      contentEl.innerHTML = `
+        <div class="book-title"><strong>Titre : ${title}</strong></div>
         <div class="book-identifier">ISBN : <strong>${isbn}</strong></div>
-        <div class="book-summary">Résumé : ${globalBooksData[isbn].summary}</div>
-        <div class="stock-info">${stock > 0 ? 'En stock : ' + stock + ' exemplaires' : 'Hors stock'}</div>
-        <span class="book-author">Auteur : ${globalBooksData[isbn].author}</span>
+        <div class="book-summary">Résumé : ${summary}</div>
+        <div class="stock-info">${stock > 0 ? `En stock : ${stock} exemplaires` : 'Hors stock'}</div>
+        <span class="book-author">Auteur : ${author}</span>
         <button class="delete-button" onclick="deleteBook('${isbn}')">Supprimer</button>
       `;
-      bookItem.appendChild(contentElement);
-
+      bookItem.appendChild(contentEl);
       bookListElement.appendChild(bookItem);
     }
-
     updateTotalBooksCount();
   }
 
-  // Supprime un livre
   window.deleteBook = function(isbn) {
     if (confirm(`Confirmer la suppression du livre avec l'ISBN ${isbn} ?`)) {
       Promise.all([
         set(child(stocksRef, isbn), null),
         set(child(booksDataRef, isbn), null)
-      ]).then(() => {
-        alert(`Livre supprimé.`);
+      ])
+      .then(() => {
+        alert("Livre supprimé.");
         updateTotalBooksCount();
-      }).catch(console.error);
+      })
+      .catch(console.error);
     }
   };
 
-  // ----------------------------
-  // 1) Gestion du formulaire ISBN
-  // ----------------------------
   const isbnForm = document.getElementById('isbn-form');
   const bookInfoSection = document.getElementById('book-info');
   const coverImg = document.getElementById('cover');
@@ -164,146 +212,256 @@ document.addEventListener('DOMContentLoaded', () => {
   const summarySpan = document.getElementById('summary');
   const stockSpan = document.getElementById('stock');
 
-  if (isbnForm && bookInfoSection) {
-    isbnForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const isbnInput = document.getElementById('isbn');
-      if (!isbnInput) return;
+  const confirmAddButton = document.getElementById('confirm-add-book');
+  const cancelAddButton = document.getElementById('cancel-add-book');
+  const stockFormEl = document.getElementById('stock-form');
+  const searchInput = document.getElementById('search-book');
+  const searchResultsDiv = document.getElementById('search-results');
 
-      const rawISBN = sanitizeISBN(isbnInput.value.trim());
-      if (!isValidISBN(rawISBN)) {
-        alert('ISBN non valide (10 ou 13 chiffres).');
-        return;
-      }
+  // Bouton et zone pour édition manuelle (si infos manquantes)
+  const fillInfoButton = document.getElementById('fill-info-button');
+  const manualEditDiv = document.getElementById('manual-edit');
+  const manualAuthorInput = document.getElementById('manual-author');
+  const manualSummaryInput = document.getElementById('manual-summary');
+  const saveManualInfoButton = document.getElementById('save-manual-info');
+  const cancelManualInfoButton = document.getElementById('cancel-manual-info');
 
-      // Recherche du livre dans la DB
-      get(child(booksDataRef, rawISBN)).then(bookSnap => {
-        if (bookSnap.exists()) {
-          // Livre existant => on l'affiche
-          const data = bookSnap.val();
-          // Normalisation auteur
-          data.author = data.author || 'Auteur inconnu';
+  let bookDataPending = null;
+  let currentISBN = null;
 
-          // Affiche dans la section
-          bookInfoSection.classList.remove('hidden');
-          setCoverImage(coverImg, rawISBN);
-          titleSpan.textContent = data.title || 'Sans titre';
-          authorSpan.textContent = data.author;
-          summarySpan.textContent = data.summary || 'Pas de résumé.';
-          
-          // On va aussi chercher le stock
-          get(child(stocksRef, rawISBN)).then(stockSnap => {
-            let stockValue = stockSnap.exists() ? stockSnap.val() : 0;
-            if (stockValue > 0) {
-              stockSpan.textContent = `En stock : ${stockValue} exemplaires`;
-              stockSpan.classList.remove('out-of-stock');
-              stockSpan.classList.add('in-stock');
-            } else {
-              stockSpan.textContent = 'Hors stock';
-              stockSpan.classList.remove('in-stock');
-              stockSpan.classList.add('out-of-stock');
-            }
-          });
-        } else {
-          // Livre inexistant => on propose de le créer
-          if (confirm('Le livre n’existe pas. Voulez-vous le créer ?')) {
-            // On crée le livre dans booksData avec titre minimal
-            const newBook = {
-              title: 'Nouveau livre',
-              author: 'Auteur inconnu',
-              summary: 'Aucune information'
-            };
-            Promise.all([
-              set(child(booksDataRef, rawISBN), newBook),
-              set(child(stocksRef, rawISBN), 0)
-            ])
-            .then(() => {
-              alert('Nouveau livre créé ! Il est à 0 en stock pour le moment.');
-              // Forçons un refresh
-              bookInfoSection.classList.add('hidden');
-            })
-            .catch(console.error);
-          } else {
-            // L’utilisateur ne veut pas créer, on masque la section
-            bookInfoSection.classList.add('hidden');
-          }
-        }
-      });
-    });
+  function checkIfManualNeeded(author, summary) {
+    if (author === "Auteur inconnu" || summary === "Aucune information") {
+      fillInfoButton.classList.remove('hidden');
+    } else {
+      fillInfoButton.classList.add('hidden');
+    }
   }
 
-  // ----------------------------
-  // 2) Mise à jour du stock
-  // ----------------------------
-  const stockFormEl = document.getElementById('stock-form');
+  fillInfoButton.addEventListener('click', () => {
+    manualEditDiv.classList.remove('hidden');
+    if (bookDataPending.author === "Auteur inconnu") {
+      manualAuthorInput.value = "";
+    } else {
+      manualAuthorInput.value = bookDataPending.author;
+    }
+    if (bookDataPending.summary === "Aucune information") {
+      manualSummaryInput.value = "";
+    } else {
+      manualSummaryInput.value = bookDataPending.summary;
+    }
+  });
+
+  saveManualInfoButton.addEventListener('click', () => {
+    const newAuthor = manualAuthorInput.value.trim();
+    const newSummary = manualSummaryInput.value.trim();
+    if (newAuthor) { bookDataPending.author = newAuthor; }
+    if (newSummary) { bookDataPending.summary = newSummary; }
+    authorSpan.textContent = bookDataPending.author;
+    summarySpan.textContent = bookDataPending.summary;
+    manualEditDiv.classList.add('hidden');
+    checkIfManualNeeded(bookDataPending.author, bookDataPending.summary);
+  });
+
+  cancelManualInfoButton.addEventListener('click', () => {
+    manualEditDiv.classList.add('hidden');
+  });
+
+  isbnForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showSpinner();
+
+    const isbnInput = document.getElementById('isbn');
+    if (!isbnInput) return;
+    const rawISBN = sanitizeISBN(isbnInput.value.trim());
+    if (!isValidISBN(rawISBN)) {
+      alert('ISBN non valide (10 ou 13 chiffres).');
+      hideSpinner();
+      return;
+    }
+    currentISBN = rawISBN;
+    let dataFromApi = null;
+    const selectedEngine = engineSelect.value || "auto";
+    if (selectedEngine === "google") {
+      try {
+        const googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${rawISBN}`);
+        const googleData = await googleRes.json();
+        if (googleData.items && googleData.items.length > 0) {
+          dataFromApi = { googleBooksResults: googleData.items };
+        }
+      } catch (e) {
+        console.warn("Erreur Google Books:", e);
+      }
+    } else if (selectedEngine === "openlibrary") {
+      try {
+        const openRes = await fetch(`https://openlibrary.org/isbn/${rawISBN}.json`);
+        if (openRes.ok) {
+          const openData = await openRes.json();
+          let title = openData.title || "Sans titre";
+          let author = "Auteur inconnu";
+          let summary = "Aucune information";
+          if (typeof openData.by_statement === 'string') { author = openData.by_statement; }
+          if (typeof openData.description === 'string') { summary = openData.description; }
+          else if (typeof openData.description === 'object' && openData.description.value) { summary = openData.description.value; }
+          const merged = await completeWithGoogleIfNeeded(rawISBN, { title, author, summary });
+          dataFromApi = { openLibraryResult: merged };
+        }
+      } catch (e) {
+        console.warn("Erreur Open Library:", e);
+      }
+    } else {
+      dataFromApi = await fetchBookDataFromAPIs(rawISBN);
+      if (!dataFromApi && rawISBN.length === 10) {
+        const isbn13 = convertISBN10toISBN13(rawISBN);
+        dataFromApi = await fetchBookDataFromAPIs(isbn13);
+        if (dataFromApi) { currentISBN = isbn13; }
+      }
+    }
+    bookInfoSection.classList.add('hidden');
+    searchResultsDiv.classList.add('hidden');
+    searchResultsDiv.innerHTML = '';
+
+    if (dataFromApi && dataFromApi.googleBooksResults) {
+      const googleResults = dataFromApi.googleBooksResults;
+      if (googleResults.length > 1) {
+        searchResultsDiv.classList.remove('hidden');
+        googleResults.forEach((item, index) => {
+          const volumeInfo = item.volumeInfo || {};
+          const { title, author } = parseVolumeInfo(volumeInfo);
+          const tabBtn = document.createElement('button');
+          tabBtn.classList.add('tab');
+          tabBtn.textContent = title + " - " + author;
+          tabBtn.dataset.index = index;
+          tabBtn.addEventListener('click', async () => {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            tabBtn.classList.add('active');
+            const { title, author, summary } = parseVolumeInfo(volumeInfo);
+            showBookInfos(title, author, summary);
+          });
+          if (index === 0) {
+            tabBtn.classList.add('active');
+            const { title, author, summary } = parseVolumeInfo(volumeInfo);
+            showBookInfos(title, author, summary);
+          }
+          searchResultsDiv.appendChild(tabBtn);
+        });
+        hideSpinner();
+        return;
+      } else {
+        const volumeInfo = googleResults[0].volumeInfo || {};
+        const { title, author, summary } = parseVolumeInfo(volumeInfo);
+        showBookInfos(title, author, summary);
+      }
+    } else if (dataFromApi && dataFromApi.openLibraryResult) {
+      const { title, author, summary } = dataFromApi.openLibraryResult;
+      showBookInfos(title, author, summary);
+    } else {
+      showBookInfos("Nouveau livre", "Auteur inconnu", "Aucune information");
+    }
+    hideSpinner();
+  });
+
+  function showBookInfos(title, author, summary) {
+    bookDataPending = { title, author, summary };
+    bookInfoSection.classList.remove('hidden');
+    coverImg.loading = "eager";
+    coverImg.fetchPriority = "high";
+    setCoverImage(coverImg, currentISBN);
+    titleSpan.textContent = title;
+    authorSpan.textContent = author;
+    summarySpan.textContent = summary;
+    checkIfManualNeeded(author, summary);
+
+    get(child(stocksRef, currentISBN))
+      .then(snap => {
+        const stockVal = snap.exists() ? snap.val() : 0;
+        updateStockInfo(stockVal);
+      })
+      .catch(console.error);
+
+    get(child(booksDataRef, currentISBN))
+      .then(snap => {
+        if (snap.exists()) {
+          confirmAddButton.style.display = 'none';
+          cancelAddButton.style.display = 'none';
+        } else {
+          confirmAddButton.style.display = 'inline-block';
+          cancelAddButton.style.display = 'inline-block';
+        }
+      })
+      .catch(console.error);
+  }
+
+  function updateStockInfo(stockVal) {
+    if (stockVal > 0) {
+      stockSpan.textContent = `En stock : ${stockVal} exemplaires`;
+      stockSpan.classList.add('in-stock');
+      stockSpan.classList.remove('out-of-stock');
+    } else {
+      stockSpan.textContent = 'Hors stock';
+      stockSpan.classList.remove('in-stock');
+      stockSpan.classList.add('out-of-stock');
+    }
+  }
+
+  confirmAddButton.addEventListener('click', async () => {
+    if (!bookDataPending || !currentISBN) {
+      alert('Aucune donnée à insérer.');
+      return;
+    }
+    await Promise.all([
+      set(child(booksDataRef, currentISBN), bookDataPending),
+      set(child(stocksRef, currentISBN), 0)
+    ]);
+    alert('Livre créé en base, stock = 0.');
+    confirmAddButton.style.display = 'none';
+    cancelAddButton.style.display = 'none';
+    isbnForm.dispatchEvent(new Event('submit'));
+  });
+
+  cancelAddButton.addEventListener('click', () => {
+    bookInfoSection.classList.add('hidden');
+    confirmAddButton.style.display = 'none';
+    cancelAddButton.style.display = 'none';
+    bookDataPending = null;
+    currentISBN = null;
+  });
+
   if (stockFormEl) {
-    stockFormEl.addEventListener('submit', (e) => {
+    stockFormEl.addEventListener('submit', async (e) => {
       e.preventDefault();
       const isbnInput = document.getElementById('isbn');
       const newStockInput = document.getElementById('new-stock');
       if (!isbnInput || !newStockInput) return;
-
       let rawISBN = sanitizeISBN(isbnInput.value.trim());
       let newStockVal = parseInt(newStockInput.value, 10);
-
       if (!isValidISBN(rawISBN)) {
-        alert('ISBN non valide.');
+        alert('ISBN invalide.');
         return;
       }
       if (isNaN(newStockVal) || newStockVal < 0) {
         alert('Quantité invalide.');
         return;
       }
-      // On met à jour
-      set(child(stocksRef, rawISBN), newStockVal).then(() => {
-        alert('Stock mis à jour.');
-        // Mise à jour du label stock dans la section
-        if (newStockVal > 0) {
-          stockSpan.textContent = `En stock : ${newStockVal} exemplaires`;
-          stockSpan.classList.remove('out-of-stock');
-          stockSpan.classList.add('in-stock');
-        } else {
-          stockSpan.textContent = 'Hors stock';
-          stockSpan.classList.remove('in-stock');
-          stockSpan.classList.add('out-of-stock');
-        }
-      }).catch(console.error);
+      await set(child(stocksRef, rawISBN), newStockVal);
+      alert('Stock mis à jour.');
+      updateStockInfo(newStockVal);
     });
   }
 
-  // ----------------------------
-  // 3) Recherche globale (titre/auteur)
-  // ----------------------------
-  const searchInput = document.getElementById('search-book');
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       renderBookList(searchInput.value);
     });
   }
 
-  // ----------------------------
-  // 4) Listener global Firebase
-  // ----------------------------
   function initializeBookListListener() {
     onValue(booksDataRef, (snapBooks) => {
       globalBooksData = snapBooks.val() || {};
       onValue(stocksRef, (snapStocks) => {
         globalStocksData = snapStocks.val() || {};
-        // Actualise la liste
-        if (searchInput) {
-          renderBookList(searchInput.value);
-        } else {
-          renderBookList();
-        }
+        renderBookList(searchInput.value);
       });
     });
   }
   initializeBookListListener();
-
-  // Petit rappel
-  console.info(
-    \"Vérifie tes règles Firebase pour autoriser la lecture/écriture si nécessaire.\" +
-    \"\\nExemple en dev : { 'rules': { '.read': true, '.write': true } }\\n\" +
-    \"En production, il faut des règles plus fines.\"
-  );
 });
