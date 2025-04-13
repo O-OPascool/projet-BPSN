@@ -4,11 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestion de Stock de Livres</title>
+  <!-- Importation d'une police moderne depuis Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <!-- Préconnexion pour accélérer le chargement des couvertures Open Library -->
   <link rel="preconnect" href="https://covers.openlibrary.org">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Barre de navigation moderne -->
+  <header>
+    <nav class="navbar">
+      <!-- Marque ou logo (texte ou image) -->
+      <div class="navbar-brand">BIBLIO</div>
+      <!-- Bouton de bascule du mode sombre -->
+      <button id="mode-toggle" class="mode-toggle-btn">🌙</button>
+    </nav>
+  </header>
+
+  <!-- Contenu principal de la page -->
   <div class="container">
     <h1>Recherche et Gestion de Stock</h1>
 
@@ -25,7 +38,7 @@
       <button type="submit">Rechercher</button>
     </form>
 
-    <!-- Spinner pour indiquer le chargement -->
+    <!-- Spinner de chargement -->
     <div id="spinner" class="spinner hidden"></div>
 
     <!-- Résultats multiples sous forme d'onglets -->
@@ -67,5 +80,10 @@
     <div id="total-books-count" class="total-books">Total des livres disponibles : 0</div>
   </div>
   <script type="module" src="script.js"></script>
+
+   <!-- Pied de page -->
+<footer class="text-center py-6 bg-gray-200 dark:bg-gray-800 dark:text-gray-400 transition-colors duration-500" data-aos="fade-up">
+  <p>&copy; 2025 - Chef d'oeuvre BIBLIO<br>Tous droits réservés</p>
+</footer>
 </body>
 </html>
