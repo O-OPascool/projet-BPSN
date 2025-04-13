@@ -1,26 +1,74 @@
-/* Styles de base */
+/* =============================== */
+/* Styles pour le mode clair       */
+/* =============================== */
 body {
-  font-family: 'Arial', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   color: #333;
   margin: 0;
   padding: 0;
-  background-image: url("background.jpg");
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-attachment: fixed;
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
 }
 
+/* Barre de navigation */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  height: 60px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-links a {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.3s;
+}
+
+.navbar-links a:hover {
+  opacity: 0.7;
+}
+
+.mode-toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.mode-toggle-btn:hover {
+  opacity: 0.7;
+}
+
+/* Conteneur principal */
 .container {
   width: 90%;
   max-width: 800px;
   margin: 20px auto;
-  background: rgba(255, 255, 255, 0.8);
+  background: #fff;
   padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
 }
 
+/* Titres */
 h1, h2 {
   text-align: center;
   color: #007BFF;
@@ -64,6 +112,7 @@ button {
   width: 130px;
   margin-bottom: 10px;
 }
+
 button:hover {
   background-color: #0056b3;
 }
@@ -72,11 +121,6 @@ button:hover {
   padding: 3px 6px;
   font-size: 0.8em;
   margin-left: 10px;
-}
-
-/* Décalage du bouton "Modifier" */
-.modified-btn {
-  margin-left: 20px;
 }
 
 /* Spinner */
@@ -89,11 +133,12 @@ button:hover {
   margin: 20px auto;
   animation: spin 1s linear infinite;
 }
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* Masquer */
+/* Masquer les éléments */
 .hidden {
   display: none;
 }
@@ -103,6 +148,7 @@ button:hover {
   margin-top: 20px;
   text-align: center;
 }
+
 #cover {
   max-width: 100px;
   height: auto;
@@ -117,9 +163,11 @@ button:hover {
 .stock-info {
   font-weight: bold;
 }
+
 .in-stock {
   color: green;
 }
+
 .out-of-stock {
   color: red;
 }
@@ -132,33 +180,40 @@ button:hover {
   border-radius: 4px;
   background-color: #fafafa;
 }
+
 .book-item {
   border-bottom: 1px solid #ddd;
   padding: 10px 0;
   display: flex;
   gap: 10px;
 }
+
 .book-item:last-child {
   border-bottom: none;
 }
+
 .book-cover {
   max-width: 80px;
   display: block;
   border-radius: 4px;
 }
+
 .book-details {
   display: flex;
   flex-direction: column;
 }
+
 .book-title {
   font-weight: bold;
   color: #007BFF;
 }
+
 .book-author {
   font-style: italic;
   color: #555;
   margin-top: 5px;
 }
+
 .delete-button {
   background-color: #d9534f;
   color: white;
@@ -169,9 +224,11 @@ button:hover {
   margin-top: 5px;
   width: auto;
 }
+
 .delete-button:hover {
   background-color: #c9302c;
 }
+
 #search-book {
   width: 60%;
   padding: 10px;
@@ -180,6 +237,7 @@ button:hover {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
 .total-books {
   margin-top: 20px;
   font-size: 18px;
@@ -195,6 +253,7 @@ button:hover {
   overflow-x: auto;
   margin-bottom: 20px;
 }
+
 .tab {
   flex: none;
   padding: 10px 15px;
@@ -205,9 +264,11 @@ button:hover {
   margin-right: 2px;
   transition: background-color 0.3s;
 }
+
 .tab:hover {
   background-color: #e0e0e0;
 }
+
 .tab.active {
   background-color: white;
   font-weight: bold;
@@ -223,7 +284,72 @@ button:hover {
   border-radius: 4px;
   background: #ffffff;
 }
+
 #manual-edit label {
   display: inline-block;
   margin-top: 10px;
+}
+
+/* =============================== */
+/* Styles pour le mode sombre       */
+/* =============================== */
+body.dark {
+  background: #121212;
+  color: #e0e0e0;
+}
+
+body.dark .navbar {
+  background-color: #1e1e1e;
+  box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
+}
+
+body.dark .navbar-brand {
+  color: #e0e0e0;
+}
+
+body.dark .navbar-links a {
+  color: #e0e0e0;
+}
+
+body.dark .mode-toggle-btn {
+  color: #e0e0e0;
+}
+
+body.dark .container {
+  background: #1e1e1e;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+body.dark h1, 
+body.dark h2 {
+  color: #66b0ff;
+}
+
+body.dark button,
+body.dark .mode-toggle-btn {  
+  background-color: #1a73e8;
+}
+
+body.dark button:hover,
+body.dark .mode-toggle-btn:hover {
+  background-color: #1558b0;
+}
+
+body.dark input[type="text"],
+body.dark input[type="number"],
+body.dark textarea {
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+body.dark select {
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+body.dark #book-list {
+  background-color: #1e1e1e;
+  border: 1px solid #555;
 }
