@@ -406,3 +406,14 @@ body.dark #book-list {
 .mode-toggle-btn:hover {
   opacity: 0.7;
 }
+
+/* Vidéo de démonstration dimensionnée */
+.fonction-video {
+  display: block;
+  margin: 0 auto 20px auto;
+  width: 80%;       /* occupe 80% de la largeur du conteneur */
+  max-width: 600px; /* ne dépassera jamais 600px de large */
+  height: auto;     /* conserve le ratio d’origine */
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
