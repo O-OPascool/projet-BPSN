@@ -29,24 +29,23 @@ function convertISBN10toISBN13(isbn10) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Gestion du mode sombre avec rappel via localStorage
   const modeToggleBtn = document.getElementById('mode-toggle');
-  const currentTheme = localStorage.getItem('theme') || 'light';
-  if (
-      localStorage.getItem('theme') === 'dark' ||
-      (!localStorage.getItem('theme')
-       && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+
+  // Met à jour l'icône du bouton selon la présence de la classe 'dark'
+  function updateToggleIcon() {
+    modeToggleBtn.textContent = document.documentElement.classList.contains('dark')
+      ? '☀️'
+      : '🌙';
+  }
+
   modeToggleBtn.addEventListener('click', () => {
-    document.body.classList.toggle('dark');
-    const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
-    localStorage.setItem('theme', theme);
-    modeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    updateToggleIcon();
   });
+
+  // Initialisation de l'icône au chargement
+  updateToggleIcon();
 
   const app = initializeApp(firebaseConfig);
   const database = getDatabase(app);
