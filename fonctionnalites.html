@@ -2,13 +2,26 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fonctionnalités - Gestionnaire de Livres</title>
+
+  <!-- Applique le thème stocké avant le chargement du CSS -->
+  <script>
+    if (
+      localStorage.getItem('theme') === 'dark' ||
+      (!localStorage.getItem('theme') &&
+       window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="light">
-
-  <!-- NAVBAR existante -->
+<body>
+  <!-- NAVBAR -->
   <header>
     <nav class="navbar">
       <a href="index.html" class="navbar-brand">BIBLIO</a>
@@ -20,7 +33,9 @@
   </header>
 
   <div class="container">
-    <h1 style="text-align:center; color:#007BFF; margin-bottom:20px;">Fonctionnalités du Site</h1>
+    <h1 style="text-align:center; color:#007BFF; margin-bottom:20px;">
+      Fonctionnalités du Site
+    </h1>
 
     <section style="margin-bottom:40px;">
       <ul style="list-style:disc; padding-left:20px; line-height:1.6;">
@@ -37,10 +52,10 @@
       </ul>
     </section>
 
-    <!-- Section Démo vidéo (ajoutée) -->
+    <!-- Section Démo vidéo -->
     <section id="video-demo" style="text-align:center; margin-bottom:40px;">
       <h2 style="color:#007BFF; margin-bottom:10px;">Démonstration du Site</h2>
-       <video
+      <video
         class="fonction-video"
         src="demo.mp4"
         autoplay
@@ -59,14 +74,20 @@
   </div>
 
   <script>
-    // Bascule clair/sombre inchangée
-    const modeToggleBtns = document.querySelectorAll('#mode-toggle');
-    modeToggleBtns.forEach(btn => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('mode-toggle');
+      // Met à jour l'icône selon la classe 'dark' sur <html>
+      function updateIcon() {
+        btn.textContent = document.documentElement.classList.contains('dark')
+          ? '☀️'
+          : '🌙';
+      }
       btn.addEventListener('click', () => {
-        document.body.classList.toggle('dark');
-        document.body.classList.toggle('light');
-        btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateIcon();
       });
+      updateIcon();
     });
   </script>
 </body>
