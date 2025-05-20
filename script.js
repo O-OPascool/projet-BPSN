@@ -29,23 +29,26 @@ function convertISBN10toISBN13(isbn10) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // --------- Gestion du mode sombre / clair ---------
   const modeToggleBtn = document.getElementById('mode-toggle');
+  if (modeToggleBtn) {
+    // Met à jour l'icône du bouton selon la présence de la classe 'dark'
+    function updateToggleIcon() {
+      modeToggleBtn.textContent = document.documentElement.classList.contains('dark')
+        ? '☀️'
+        : '🌙';
+    }
 
-  // Met à jour l'icône du bouton selon la présence de la classe 'dark'
-  function updateToggleIcon() {
-    modeToggleBtn.textContent = document.documentElement.classList.contains('dark')
-      ? '☀️'
-      : '🌙';
-  }
+    modeToggleBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      updateToggleIcon();
+    });
 
-  modeToggleBtn.addEventListener('click', () => {
-    const isDark = document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    // Initialisation de l'icône au chargement
     updateToggleIcon();
-  });
-
-  // Initialisation de l'icône au chargement
-  updateToggleIcon();
+  }
+  // -------------------------------------------------
 
   const app = initializeApp(firebaseConfig);
   const database = getDatabase(app);
@@ -87,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Mise à jour de parseVolumeInfo pour récupérer aussi l'URL de la couverture
+  // Récupère titre, auteur, résumé et possible cover depuis Google Books
   function parseVolumeInfo(volumeInfo) {
     const title = volumeInfo.title || "Sans titre";
     const author = (volumeInfo.authors && volumeInfo.authors.length > 0) ? volumeInfo.authors[0] : "Auteur inconnu";
@@ -159,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Modification de la fonction pour prendre en compte l'image de couverture dans la liste
+  // Affiche la liste en tenant compte du filtre et des couvertures
   function renderBookList(filter = '') {
     const bookListElement = document.getElementById('book-list');
     if (!bookListElement) return;
@@ -188,11 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
       imgElement.classList.add('book-cover');
       imgElement.loading = "lazy";
       
-      // Si une URL de couverture est stockée, on l'utilise
+      // Utilise d'abord l'URL stockée, sinon Open Library
       const cover = globalBooksData[isbn].cover;
       if (cover) {
         imgElement.src = cover;
-        // En cas d'erreur, on se rabat sur la couverture Open Library
         imgElement.onerror = () => {
           setCoverImage(imgElement, isbn, "");
         };
@@ -246,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchInput = document.getElementById('search-book');
   const searchResultsDiv = document.getElementById('search-results');
 
-  // Bouton et zone pour édition manuelle (si informations manquantes)
+  // Édition manuelle si nécessaire
   const fillInfoButton = document.getElementById('fill-info-button');
   const manualEditDiv = document.getElementById('manual-edit');
   const manualAuthorInput = document.getElementById('manual-author');
