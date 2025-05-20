@@ -32,13 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Gestion du mode sombre avec rappel via localStorage
   const modeToggleBtn = document.getElementById('mode-toggle');
   const currentTheme = localStorage.getItem('theme') || 'light';
-  if (currentTheme === 'dark') {
-    document.body.classList.add('dark');
-    modeToggleBtn.textContent = '☀️'; // Icône soleil pour revenir en mode clair
-  } else {
-    document.body.classList.remove('dark');
-    modeToggleBtn.textContent = '🌙'; // Icône lune pour passer en mode sombre
-  }
+  if (
+      localStorage.getItem('theme') === 'dark' ||
+      (!localStorage.getItem('theme')
+       && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
   modeToggleBtn.addEventListener('click', () => {
     document.body.classList.toggle('dark');
     const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
