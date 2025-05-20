@@ -16,16 +16,22 @@ body {
   align-items: center;
   padding: 0 2rem;
   height: 60px;
-  background-color: #fff;
+  background-color: rgba(255,255,255,0.95);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
 }
 
 .navbar-brand {
-  font-family: 'Montserrat', sans-serif; /* ou celle que tu utilises */
+  display: flex;
+  align-items: center;
+  font-family: 'Montserrat', sans-serif;
   font-size: 1.4rem;
   font-weight: 700;
   color: #333;
-  text-decoration: none; /* pour enlever le soulignement du lien */
+  text-decoration: none;
 }
 
 .navbar-links {
@@ -37,8 +43,8 @@ body {
 }
 
 .navbar-links a {
-  color: inherit;
   text-decoration: none;
+  color: #007BFF;
   font-weight: 500;
   transition: opacity 0.3s;
 }
@@ -293,127 +299,76 @@ button:hover {
 }
 
 /* =============================== */
-/* Styles pour le mode sombre       */
+/* Styles pour le mode sombre      */
 /* =============================== */
-body.dark {
+.dark body {
   background: #121212;
   color: #e0e0e0;
 }
 
-body.dark .navbar {
+.dark .navbar {
   background-color: #1e1e1e;
   box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
 }
 
-body.dark .navbar-brand {
+.dark .navbar-brand {
   color: #e0e0e0;
 }
 
-body.dark .navbar-links a {
+.dark .navbar-links a {
   color: #e0e0e0;
 }
 
-body.dark .mode-toggle-btn {
+.dark .mode-toggle-btn {
   color: #e0e0e0;
 }
 
-body.dark .container {
+.dark .container {
   background: #1e1e1e;
   box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
-body.dark h1, 
-body.dark h2 {
+.dark h1,
+.dark h2 {
   color: #66b0ff;
 }
 
-body.dark button,
-body.dark .mode-toggle-btn {  
+.dark button,
+.dark .mode-toggle-btn {
   background-color: #1a73e8;
 }
 
-body.dark button:hover,
-body.dark .mode-toggle-btn:hover {
+.dark button:hover,
+.dark .mode-toggle-btn:hover {
   background-color: #1558b0;
 }
 
-body.dark input[type="text"],
-body.dark input[type="number"],
-body.dark textarea {
+.dark input[type="text"],
+.dark input[type="number"],
+.dark textarea {
   background-color: #333;
   color: #e0e0e0;
   border: 1px solid #555;
 }
 
-body.dark select {
+.dark select {
   background-color: #333;
   color: #e0e0e0;
   border: 1px solid #555;
 }
 
-body.dark #book-list {
+.dark #book-list {
   background-color: #1e1e1e;
   border: 1px solid #555;
-}
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 2rem;
-  height: 60px;
-  background-color: rgba(255,255,255,0.95);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-}
-
-.navbar-brand {
-  display: flex;
-  align-items: center;
-}
-
-
-
-/* Liens de navigation */
-.navbar-links {
-  list-style: none;
-  display: flex;
-  gap: 1.5rem;
-  margin: 0;
-  padding: 0;
-}
-.navbar-links a {
-  text-decoration: none;
-  color: #007BFF;
-  font-weight: 500;
-  transition: opacity 0.3s;
-}
-.navbar-links a:hover {
-  opacity: 0.7;
-}
-
-/* Bouton de mode clair/sombre */
-.mode-toggle-btn {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: opacity 0.3s;
-}
-.mode-toggle-btn:hover {
-  opacity: 0.7;
 }
 
 /* Vidéo de démonstration dimensionnée */
 .fonction-video {
   display: block;
   margin: 0 auto 20px auto;
-  width: 80%;       /* occupe 80% de la largeur du conteneur */
-  max-width: 600px; /* ne dépassera jamais 600px de large */
-  height: auto;     /* conserve le ratio d’origine */
+  width: 80%;
+  max-width: 600px;
+  height: auto;
   border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
