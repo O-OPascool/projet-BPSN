@@ -13,7 +13,20 @@
 <body>
   <!-- Barre de navigation moderne -->
     <header>
-    <nav class="navbar">
+    <script>
+    // si l'utilisateur a déjà choisi 'dark' OU si le système est en dark mode ET qu'aucun choix n'est enregistré
+    if (
+      localStorage.getItem('theme') === 'dark' ||
+      (!localStorage.getItem('theme')
+       && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  </script>
+     
+      <nav class="navbar">
          <a href="index.html" class="navbar-brand">BIBLIO</a>
 
   <ul class="navbar-links">
