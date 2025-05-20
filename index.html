@@ -4,38 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestion de Stock de Livres</title>
+
+  <!-- Applique le thème enregistré avant le chargement du CSS -->
+  <script>
+    // si l'utilisateur a déjà choisi 'dark' OU si le système est en dark mode ET qu'aucun choix n'est enregistré
+    if (
+      localStorage.getItem('theme') === 'dark' ||
+      (!localStorage.getItem('theme') &&
+       window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+
   <!-- Importation d'une police moderne depuis Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <!-- Préconnexion pour accélérer le chargement des couvertures Open Library -->
   <link rel="preconnect" href="https://covers.openlibrary.org">
+  <!-- Votre fichier CSS principal -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <!-- Barre de navigation moderne -->
-    <header>
-    <script>
-    // si l'utilisateur a déjà choisi 'dark' OU si le système est en dark mode ET qu'aucun choix n'est enregistré
-    if (
-      localStorage.getItem('theme') === 'dark' ||
-      (!localStorage.getItem('theme')
-       && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  </script>
-     
-      <nav class="navbar">
-         <a href="index.html" class="navbar-brand">BIBLIO</a>
-
-  <ul class="navbar-links">
-    <li><a href="fonctionnalites.html">📄 Fonctionnalités</a></li>
-  </ul>
-  <button id="mode-toggle" class="mode-toggle-btn">🌙</button>
-</nav>
-
-
+  <header>
+    <nav class="navbar">
+      <a href="index.html" class="navbar-brand">BIBLIO</a>
+      <ul class="navbar-links">
+        <li><a href="fonctionnalites.html">📄 Fonctionnalités</a></li>
+      </ul>
+      <button id="mode-toggle" class="mode-toggle-btn">🌙</button>
+    </nav>
   </header>
 
   <!-- Contenu principal de la page -->
@@ -96,11 +96,13 @@
     <div id="book-list"></div>
     <div id="total-books-count" class="total-books">Total des livres disponibles : 0</div>
   </div>
+
+  <!-- Module JS principal -->
   <script type="module" src="script.js"></script>
 
-   <!-- Pied de page -->
-<footer class="text-center py-6 bg-gray-200 dark:bg-gray-800 dark:text-gray-400 transition-colors duration-500" data-aos="fade-up">
-  <p>&copy; 2025 - Chef d'oeuvre BIBLIO<br>Tous droits réservés</p>
-</footer>
+  <!-- Pied de page -->
+  <footer class="text-center py-6 bg-gray-200 dark:bg-gray-800 dark:text-gray-400 transition-colors duration-500" data-aos="fade-up">
+    <p>&copy; 2025 - Chef d'œuvre BIBLIO<br>Tous droits réservés</p>
+  </footer>
 </body>
 </html>
