@@ -66,7 +66,8 @@
 
     <!-- Scanner QuaggaJS -->
     <div id="scanner-container" class="hidden">
-      <video id="scanner-video"></video>
+      <!-- Quagga injecte la vidéo ici -->
+      <div id="scanner-video"></div>
       <button id="stop-scan">Arrêter le scan</button>
     </div>
 
@@ -116,9 +117,8 @@
     <div id="total-books-count" class="total-books">Total des livres disponibles : 0</div>
   </div>
 
-  <!-- QuaggaJS pour le scan de code-barres -->
+  <!-- Scripts -->
   <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
-  <!-- Script principal -->
   <script type="module" src="script.js"></script>
 
   <footer class="text-center py-6 bg-gray-200 dark:bg-gray-800 dark:text-gray-400 transition-colors duration-500">
