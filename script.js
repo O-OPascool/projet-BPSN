@@ -23,15 +23,15 @@ const firebaseConfig = {
 
 function convertISBN10toISBN13(isbn10) {
   let core = isbn10.substring(0, 9);
-  let isbn13WithoutCheck = "978" + core;
+  let isbn13WithoutCheck = "978"  core;
   let sum = 0;
-  for (let i = 0; i < isbn13WithoutCheck.length; i++) {
+  for (let i = 0; i < isbn13WithoutCheck.length; i) {
     let digit = parseInt(isbn13WithoutCheck[i]);
-    sum += (i % 2 === 0 ? digit : digit * 3);
+    sum = (i % 2 === 0 ? digit : digit * 3);
   }
   let remainder = sum % 10;
   let checkDigit = remainder === 0 ? 0 : 10 - remainder;
-  return isbn13WithoutCheck + checkDigit;
+  return isbn13WithoutCheck  checkDigit;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -56,6 +56,51 @@ document.addEventListener('DOMContentLoaded', () => {
   const stocksRef    = ref(database, 'stocks');
   const booksDataRef = ref(database, 'booksData');
 
+ // ----- GESTION DES SALLES -----
+ const roomsRef         = ref(database, 'rooms');
+ const newRoomInput     = document.getElementById('new-room');
+ const addRoomBtn       = document.getElementById('add-room');
+ const roomListEl       = document.getElementById('room-list');
+ const manualRoomSelect = document.getElementById('manual-room');
+ const roomSelect       = document.getElementById('room-select');
+
+ // Écoute et rendu des salles
+ onValue(roomsRef, snap => {
+   const rooms = snap.val() || {};
+   renderRooms(rooms);
+ });
+
+ function renderRooms(rooms) {
+   roomListEl.innerHTML       = '';
+   manualRoomSelect.innerHTML = '<option value="">Salle…</option>';
+   roomSelect.innerHTML       = '<option value="">—</option>';
+   Object.values(rooms).forEach(name => {
+     // liste  suppression
+     const li = document.createElement('li');
+     li.textContent = name  ' ';
+     const del = document.createElement('button');
+     del.textContent = '🗑️';
+     del.onclick = () => set(child(roomsRef, name), null);
+     li.appendChild(del);
+     roomListEl.appendChild(li);
+     // options select
+     [manualRoomSelect, roomSelect].forEach(sel => {
+       const opt = document.createElement('option'); opt.value = name; opt.text = name;
+       sel.appendChild(opt);
+     });
+   });
+ }
+
+ // ajout salle
+ addRoomBtn.addEventListener('click', async () => {
+   const name = newRoomInput.value.trim();
+   if (!name) return alert('Nom de salle requis');
+   await set(ref(database, 'rooms/'  encodeURIComponent(name)), name);
+   newRoomInput.value = '';
+ });
+ // ----- FIN GESTION DES SALLES -----
+
+
   const spinner = document.getElementById('spinner');
   function showSpinner() { spinner.classList.remove('hidden'); }
   function hideSpinner() { spinner.classList.add('hidden'); }
@@ -76,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return (isbn.length === 10 || isbn.length === 13) && !isNaN(isbn);
   }
 
-  function setCoverImage(img, isbn, fallback='https://via.placeholder.com/150x200?text=No+Cover') {
+  function setCoverImage(img, isbn, fallback='https://via.placeholder.com/150x200?text=NoCover') {
     img.src = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
     img.onerror = () => {
       if (fallback) {
@@ -136,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let globalBooksData = {}, globalStocksData = {};
 
   function updateTotalBooksCount(){
-    const total = Object.values(globalStocksData).reduce((a,v)=>a+(v||0),0);
+    const total = Object.values(globalStocksData).reduce((a,v)=>a(v||0),0);
     document.getElementById('total-books-count').textContent = `Total des livres disponibles : ${total}`;
   }
 
@@ -383,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ————————————————————————————————————————————
-  // Ajout manuel + édition directe
+  // Ajout manuel  édition directe
   const manualToggleBtn = document.getElementById('manual-add-toggle');
   const manualForm      = document.getElementById('manual-add-form');
   manualToggleBtn.addEventListener('click', () => manualForm.classList.toggle('hidden'));
@@ -461,26 +506,28 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   initializeBookListListener();
 
-  // ——— Scanner de code-barres avec QuaggaJS ———
-  const scannerContainer = document.getElementById('scanner-container');
+  
+  // ——— Gestion du scanner ———
+  const scannerContainer   = document.getElementById('scanner-container');
   const scannerVideoTarget = document.getElementById('scanner-video');
-  const stopScanBtn      = document.getElementById('stop-scan');
-  const scanSearchToggle = document.getElementById('scan-search-toggle');
-  const scanManualToggle = document.getElementById('scan-manual-toggle');
+  const stopScanBtn        = document.getElementById('stop-scan');
+  const scanSearchToggle   = document.getElementById('scan-search-toggle');
+  const scanManualToggle   = document.getElementById('scan-manual-toggle');
 
-  // Masquer le scanner au chargement
+  // 1) Au chargement : on cache le scanner
   scannerContainer.classList.add('hidden');
 
   function startScanner(onDetected) {
+    // toujours cibler scannerContainer et scannerVideoTarget
     scannerContainer.classList.remove('hidden');
     Quagga.init({
       inputStream: {
         name: "Live",
         type: "LiveStream",
-        target: scannerVideoTarget,
+        target: scannerVideoTarget,  // on y injecte le flux
         constraints: { facingMode: "environment" }
       },
-      decoder: { readers: ["ean_reader","ean_13_reader"] }
+      decoder: { readers: ["ean_reader", "ean_13_reader"] }
     }, err => {
       if (err) {
         console.error(err);
@@ -511,6 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isbnForm.dispatchEvent(new Event('submit'));
     });
   });
+
   scanManualToggle.addEventListener('click', () => {
     startScanner(code => {
       const mi = document.getElementById('manual-isbn');
@@ -518,6 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
       mi.focus();
     });
   });
+
   stopScanBtn.addEventListener('click', stopScanner);
   // —————————————————————————————
 });
