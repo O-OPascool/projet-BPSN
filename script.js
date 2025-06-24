@@ -487,5 +487,43 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+const manualToggleBtn = document.getElementById('manual-add-toggle');
+  const manualForm      = document.getElementById('manual-add-form');
+
+  manualToggleBtn.addEventListener('click', () => {
+    manualForm.classList.toggle('hidden');
+  });
+
+  manualForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title   = document.getElementById('manual-title').value.trim();
+    const author  = document.getElementById('manual-author-full').value.trim();
+    const summary = document.getElementById('manual-summary-full').value.trim();
+    const isbn    = sanitizeISBN(document.getElementById('manual-isbn').value.trim());
+
+    if (!title || !author || !summary || !isbn || !isValidISBN(isbn)) {
+      alert("Tous les champs sont requis avec un ISBN valide.");
+      return;
+    }
+
+    const bookSnap = await get(child(booksDataRef, isbn));
+    if (bookSnap.exists()) {
+      alert("Ce livre existe déjà.");
+      return;
+    }
+
+    const bookData = { title, author, summary, cover: "" };
+    await Promise.all([
+      set(child(booksDataRef, isbn), bookData),
+      set(child(stocksRef,     isbn), 0)
+    ]);
+
+    alert("Livre ajouté avec succès.");
+    manualForm.reset();
+    manualForm.classList.add('hidden');
+  });
+
+
   initializeBookListListener();
 });
