@@ -46,39 +46,7 @@
       <button type="submit">Rechercher</button>
     </form>
 
-    <!-- Formulaire manuel (API) -->
-    <div id="book-info" class="hidden">
-      <img id="cover" alt="Image de couverture">
-      <p><strong>Titre :</strong> <span id="title"></span></p>
-      <p><strong>Auteur :</strong> <span id="author"></span></p>
-      <p><strong>Résumé :</strong> <span id="summary"></span></p>
-
-      <!-- RÉ-AJOUT de l’édition manuelle API -->
-      <button id="fill-info-button" class="hidden">Compléter les informations</button>
-      <div id="manual-edit" class="hidden">
-        <label for="manual-author">Auteur :</label>
-        <input type="text" id="manual-author">
-        <label for="manual-summary">Résumé :</label>
-        <textarea id="manual-summary" rows="5"></textarea>
-        <button id="save-manual-info">Enregistrer</button>
-        <button id="cancel-manual-info">Annuler</button>
-      </div>
-
-      <!-- Catégorisation par salle -->
-      <label for="room-select"><strong>Salle :</strong></label>
-      <select id="room-select">
-        <option value="">—</option>
-        <option value="Salon">Salon</option>
-        <option value="Bureau">Bureau</option>
-        <option value="Chambre">Chambre</option>
-      </select>
-
-      <p><strong>Disponibilité :</strong> <span id="stock" class="stock-info">—</span></p>
-      <button id="confirm-add-book" style="display:none;">Confirmer l'ajout</button>
-      <button id="cancel-add-book"  style="display:none;">Annuler</button>
-    </div>
-
-    <!-- Bouton et formulaire d’ajout manuel complet -->
+    <!-- Formulaire manuel -->
     <button id="manual-add-toggle">➕ Ajouter un livre manuellement</button>
     <form id="manual-add-form" class="form hidden">
       <input type="text" id="manual-title"      placeholder="Titre du livre"                required>
@@ -97,6 +65,14 @@
       <button type="submit">Ajouter / Mettre à jour</button>
     </form>
 
+    <!-- Gestion des salles -->
+    <section class="form">
+      <h2>Gestion des salles</h2>
+      <input type="text" id="new-room" placeholder="Nouvelle salle…">
+      <button type="button" id="add-room">Ajouter salle</button>
+      <ul id="room-list"></ul>
+    </section>
+
     <!-- Overlay Scanner QuaggaJS -->
     <div id="scanner-container" class="hidden">
       <div id="scanner-video"></div>
@@ -109,6 +85,43 @@
     <!-- Onglets résultats Google -->
     <div id="search-results" class="tabs hidden"></div>
 
+    <!-- Infos du livre trouvé / à ajouter -->
+    <div id="book-info" class="hidden">
+      <img id="cover" alt="Image de couverture">
+      <p><strong>Titre :</strong> <span id="title"></span></p>
+      <p><strong>Auteur :</strong> <span id="author"></span></p>
+      <p><strong>Résumé :</strong> <span id="summary"></span></p>
+
+      <!-- édition manuelle d'un résultat API -->
+      <button id="fill-info-button" class="small-btn hidden">Compléter les infos</button>
+      <div id="manual-edit" class="hidden">
+        <label>Auteur : <input type="text" id="manual-author"></label><br>
+        <label>Résumé : <textarea id="manual-summary" rows="4"></textarea></label><br>
+        <button id="save-manual-info">Enregistrer</button>
+        <button id="cancel-manual-info">Annuler</button>
+      </div>
+
+      <label for="room-select">Salle :</label>
+      <select id="room-select">
+        <option value="">—</option>
+        <option value="Salon">Salon</option>
+        <option value="Bureau">Bureau</option>
+        <option value="Chambre">Chambre</option>
+      </select>
+
+      <p><strong>Disponibilité :</strong> <span id="stock" class="stock-info">—</span></p>
+
+      <button id="confirm-add-book" style="display:none;">Confirmer l'ajout</button>
+      <button id="cancel-add-book"  style="display:none;">Annuler</button>
+
+      <!-- Formulaire de mise à jour du stock -->
+      <form id="stock-form" class="stock-form">
+        <label for="new-stock">Mettre à jour le stock :</label>
+        <input type="number" id="new-stock" placeholder="Nombre d'exemplaires" required>
+        <button type="submit">Mettre à jour</button>
+      </form>
+    </div>
+
     <!-- Filtre + Liste des livres -->
     <h2>Liste des Livres Disponibles</h2>
     <input type="text" id="search-book" placeholder="Rechercher par titre ou auteur…">
@@ -120,9 +133,8 @@
     <p>&copy; 2025 – Chef d’œuvre BIBLIO<br>Tous droits réservés</p>
   </footer>
 
-  <!-- QuaggaJS pour le scan -->
+  <!-- QuaggaJS + script principal -->
   <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
-  <!-- Votre script principal -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
