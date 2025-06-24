@@ -40,6 +40,7 @@
     <!-- Recherche ISBN -->
     <form id="isbn-form" class="form">
       <input type="text" id="isbn" placeholder="Entrez un ISBN (10 ou 13 chiffres)" required>
+      <button type="button" id="scan-search-toggle" class="small-btn">📷</button>
       <select id="search-engine" title="Choisissez le moteur">
         <option value="auto" selected>Auto</option>
         <option value="google">Google</option>
@@ -56,11 +57,18 @@
       <input type="text" id="manual-title"      placeholder="Titre du livre"                required>
       <input type="text" id="manual-author-full" placeholder="Auteur du livre"               required>
       <textarea id="manual-summary-full"         placeholder="Résumé" rows="5"            required></textarea>
-      <input type="text" id="manual-isbn"         placeholder="ISBN unique (obligatoire)"  required>
+      <input type="text" id="manual-isbn"         placeholder="ISBN unique (obligatoire)" required>
+      <button type="button" id="scan-manual-toggle" class="small-btn">📷</button>
       <input type="text" id="manual-cover-url"    placeholder="URL couverture ou Data URI (optionnel)">
       <input type="number" id="manual-stock"      placeholder="Stock initial" min="0">
       <button type="submit">Ajouter / Mettre à jour</button>
     </form>
+
+    <!-- Scanner QuaggaJS -->
+    <div id="scanner-container" class="hidden">
+      <video id="scanner-video"></video>
+      <button id="stop-scan">Arrêter le scan</button>
+    </div>
 
     <!-- Spinner -->
     <div id="spinner" class="spinner hidden"></div>
@@ -108,11 +116,13 @@
     <div id="total-books-count" class="total-books">Total des livres disponibles : 0</div>
   </div>
 
+  <!-- QuaggaJS pour le scan de code-barres -->
+  <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
   <!-- Script principal -->
   <script type="module" src="script.js"></script>
 
   <footer class="text-center py-6 bg-gray-200 dark:bg-gray-800 dark:text-gray-400 transition-colors duration-500">
-    <p>&copy; 2025 - Chef d'œuvre BIBLIO<br>Tous droits réservés</p>
+    <p>&copy; 2025 – Chef d’œuvre BIBLIO<br>Tous droits réservés</p>
   </footer>
 </body>
 </html>
