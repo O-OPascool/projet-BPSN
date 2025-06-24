@@ -2,23 +2,20 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gestion de Stock de Livres</title>
 
-  <!-- Applique le thème enregistré avant le chargement du CSS -->
+  <!-- Thème clair/sombre avant le CSS -->
   <script>
     if (
       localStorage.getItem('theme') === 'dark' ||
-      (!localStorage.getItem('theme') &&
-       window.matchMedia('(prefers-color-scheme: dark)').matches)
+      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
     ) {
       document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
     }
   </script>
 
-  <!-- Google Fonts & préconnexion OpenLibrary -->
+  <!-- Google Fonts & OpenLibrary covers -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://covers.openlibrary.org">
   <link rel="stylesheet" href="styles.css">
@@ -49,10 +46,8 @@
       <button type="submit">Rechercher</button>
     </form>
 
-    <!-- Bouton afficher/masquer le formulaire manuel -->
+    <!-- Formulaire manuel -->
     <button id="manual-add-toggle">➕ Ajouter un livre manuellement</button>
-
-    <!-- Formulaire manuel pour ajout / édition -->
     <form id="manual-add-form" class="form hidden">
       <input type="text" id="manual-title"      placeholder="Titre du livre"                required>
       <input type="text" id="manual-author-full" placeholder="Auteur du livre"               required>
@@ -60,69 +55,59 @@
       <input type="text" id="manual-isbn"         placeholder="ISBN unique (obligatoire)" required>
       <button type="button" id="scan-manual-toggle" class="small-btn">📷</button>
       <input type="text" id="manual-cover-url"    placeholder="URL couverture ou Data URI (optionnel)">
+      <select id="manual-room" required>
+        <option value="">Salle…</option>
+        <option value="Salon">Salon</option>
+        <option value="Bureau">Bureau</option>
+        <option value="Chambre">Chambre</option>
+      </select>
       <input type="number" id="manual-stock"      placeholder="Stock initial" min="0">
       <button type="submit">Ajouter / Mettre à jour</button>
     </form>
 
-    <!-- Scanner QuaggaJS -->
+    <!-- Overlay Scanner QuaggaJS -->
     <div id="scanner-container" class="hidden">
-      <!-- Quagga injecte la vidéo ici -->
       <div id="scanner-video"></div>
       <button id="stop-scan">Arrêter le scan</button>
     </div>
 
-    <!-- Spinner -->
+    <!-- Spinner de chargement -->
     <div id="spinner" class="spinner hidden"></div>
 
     <!-- Onglets résultats Google -->
     <div id="search-results" class="tabs hidden"></div>
 
-    <!-- Affichage infos livre sélectionné -->
+    <!-- Infos du livre trouvé / à ajouter -->
     <div id="book-info" class="hidden">
       <img id="cover" alt="Image de couverture">
       <p><strong>Titre :</strong> <span id="title"></span></p>
       <p><strong>Auteur :</strong> <span id="author"></span></p>
       <p><strong>Résumé :</strong> <span id="summary"></span></p>
-
-      <button id="fill-info-button" class="hidden">Compléter les informations</button>
-
-      <!-- Edition manuelle d'un livre trouvé via ISBN -->
-      <div id="manual-edit" class="hidden">
-        <label for="manual-author">Auteur :</label>
-        <input type="text" id="manual-author">
-        <label for="manual-summary">Résumé :</label>
-        <textarea id="manual-summary" rows="5"></textarea>
-        <button id="save-manual-info">Enregistrer</button>
-        <button id="cancel-manual-info">Annuler</button>
-      </div>
-
-      <p><strong>Disponibilité :</strong>
-        <span id="stock" class="stock-info">Vérification en cours...</span>
-      </p>
-
-      <button id="confirm-add-book" style="display: none;">Confirmer l'ajout</button>
-      <button id="cancel-add-book"  style="display: none;">Annuler</button>
-
-      <!-- Mise à jour du stock pour livre existant -->
-      <form id="stock-form" class="stock-form">
-        <label for="new-stock">Mettre à jour le stock :</label>
-        <input type="number" id="new-stock" placeholder="Nombre d'exemplaires" required>
-        <button type="submit">Mettre à jour</button>
-      </form>
+      <label for="room-select">Salle :</label>
+      <select id="room-select">
+        <option value="">—</option>
+        <option value="Salon">Salon</option>
+        <option value="Bureau">Bureau</option>
+        <option value="Chambre">Chambre</option>
+      </select>
+      <p><strong>Disponibilité :</strong> <span id="stock" class="stock-info">—</span></p>
+      <button id="confirm-add-book" style="display:none;">Confirmer l'ajout</button>
+      <button id="cancel-add-book"  style="display:none;">Annuler</button>
     </div>
 
+    <!-- Filtre + Liste des livres -->
     <h2>Liste des Livres Disponibles</h2>
-    <input type="text" id="search-book" placeholder="Rechercher par titre ou auteur...">
+    <input type="text" id="search-book" placeholder="Rechercher par titre ou auteur…">
     <div id="book-list"></div>
     <div id="total-books-count" class="total-books">Total des livres disponibles : 0</div>
   </div>
 
-  <!-- Scripts -->
-  <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
-  <script type="module" src="script.js"></script>
-
   <footer class="text-center py-6 bg-gray-200 dark:bg-gray-800 dark:text-gray-400 transition-colors duration-500">
     <p>&copy; 2025 – Chef d’œuvre BIBLIO<br>Tous droits réservés</p>
   </footer>
+
+  <!-- QuaggaJS + script principal -->
+  <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
