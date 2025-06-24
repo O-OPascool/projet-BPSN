@@ -123,23 +123,56 @@ button {
 
 /* Bouton d'ajout manuel */
 #manual-add-toggle {
-  display: block;           /* pour qu'il occupe toute la largeur */
-  margin: 15px auto;        /* espacement au-dessus et en dessous */
-  background-color: #f8cbdb;/* rose pour le différencier */
-  width: 200px;             /* taille fixe ou adapte à ton design */
+  display: block;
+  margin: 15px auto;
+  background-color: #f8cbdb;
+  width: 200px;
 }
 
 #manual-add-toggle:hover {
-  background-color: #f8cbdb;/* un rose un peu plus foncé au survol */
+  background-color: #f8cbdb;
 }
 
 /* Formulaire manuel */
 #manual-add-form {
-  margin-top: 10px;         /* écarte du bouton */
-  padding: 15px;            /* espace intérieur symétrique */
-  border: 1px solid #ccc;   /* pour le démarquer */
+  margin-top: 10px;
+  padding: 15px;
+  border: 1px solid #ccc;
   border-radius: 4px;
-  background-color: #f9f9f9;/* léger fond gris */
+  background-color: #f9f9f9;
+}
+
+/* Conteneur du scanner */
+#scanner-container {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.95);
+  padding: 10px;
+  border-radius: 8px;
+  z-index: 2000;
+  text-align: center;
+}
+
+#scanner-video {
+  width: 300px;
+  height: auto;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+#stop-scan {
+  padding: 6px 12px;
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#stop-scan:hover {
+  background-color: #c9302c;
 }
 
 /* En mode sombre, harmoniser le fond */
@@ -188,10 +221,8 @@ button:hover {
   max-width: 100px;
   height: auto;
   border-radius: 4px;
-  margin-bottom: 10px;
+  margin: 10px auto;
   display: block;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 /* Info stock */
@@ -229,7 +260,6 @@ button:hover {
 
 .book-cover {
   max-width: 80px;
-  display: block;
   border-radius: 4px;
 }
 
@@ -257,7 +287,6 @@ button:hover {
   border-radius: 4px;
   cursor: pointer;
   margin-top: 5px;
-  width: auto;
 }
 
 .delete-button:hover {
@@ -338,14 +367,8 @@ button:hover {
   box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
 }
 
-.dark .navbar-brand {
-  color: #e0e0e0;
-}
-
-.dark .navbar-links a {
-  color: #e0e0e0;
-}
-
+.dark .navbar-brand,
+.dark .navbar-links a,
 .dark .mode-toggle-btn {
   color: #e0e0e0;
 }
@@ -372,12 +395,7 @@ button:hover {
 
 .dark input[type="text"],
 .dark input[type="number"],
-.dark textarea {
-  background-color: #333;
-  color: #e0e0e0;
-  border: 1px solid #555;
-}
-
+.dark textarea,
 .dark select {
   background-color: #333;
   color: #e0e0e0;
@@ -394,7 +412,7 @@ button:hover {
   display: block;
   margin: 0 auto 20px auto;
   width: 80%;
-  max-width: 600px;
+  max    -width: 600px;
   height: auto;
   border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
