@@ -125,7 +125,7 @@ button {
 #manual-add-toggle {
   display: block;           /* pour qu'il occupe toute la largeur */
   margin: 15px auto;        /* espacement au-dessus et en dessous */
-  background-color: #28a745;/* vert pour le différencier */
+  background-color: #f8cbdb;/* rose pour le différencier */
   width: 200px;             /* taille fixe ou adapte à ton design */
 }
 
