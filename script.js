@@ -1,252 +1,223 @@
 // script.js
-// Gestion de stock de livres + catégories "salle" + scan de codes-barres + intégration Firebase
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
-import { getDatabase, ref, child, set, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
-
-// — Variables globales pour édition manuelle —
-let isEditing   = false;
-let editingISBN = null;
-
-// — Configuration Firebase —
-const firebaseConfig = {
-  apiKey: "AIzaSyDKE…",
-  authDomain: "bpsn-74f1b.firebaseapp.com",
-  databaseURL: "https://bpsn-74f1b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "bpsn-74f1b",
-  storageBucket: "bpsn-74f1b.firebasestorage.app",
-  messagingSenderId: "1057707303676",
-  appId: "1:1057707303676:web:63dd292678dead41c2ed79",
-  measurementId: "G-DZGXBJERKQ"
-};
-
-// Convertit un ISBN10 en ISBN13
-function convertISBN10toISBN13(isbn10) {
-  const core = isbn10.substring(0, 9);
-  const isbn13WithoutCheck = "978" + core;
-  let sum = 0;
-  for (let i = 0; i < isbn13WithoutCheck.length; i++) {
-    const d = parseInt(isbn13WithoutCheck[i], 10);
-    sum += (i % 2 === 0 ? d : d * 3);
-  }
-  const check = sum % 10;
-  const checkDigit = check === 0 ? 0 : 10 - check;
-  return isbn13WithoutCheck + checkDigit;
-}
+import {
+  getDatabase, ref, child,
+  set, get, onValue
+} from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
 
 document.addEventListener('DOMContentLoaded', () => {
-  // —— Toggle clair/sombre ——
-  const modeToggleBtn = document.getElementById('mode-toggle');
-  if (modeToggleBtn) {
-    const updateIcon = () => {
-      modeToggleBtn.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
-    };
-    modeToggleBtn.addEventListener('click', () => {
-      const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-      updateIcon();
+  // — Toggle thème —
+  const modeBtn = document.getElementById('mode-toggle');
+  if (modeBtn) {
+    const upd = () =>
+      modeBtn.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+    modeBtn.addEventListener('click', () => {
+      const dark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+      upd();
     });
-    updateIcon();
+    upd();
   }
 
-  // —— Init Firebase ——
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  // — Firebase init —
+  const cfg = {
+    apiKey: "AIzaSyDKE…",
+    authDomain: "bpsn-74f1b.firebaseapp.com",
+    databaseURL: "https://bpsn-74f1b-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "bpsn-74f1b",
+    storageBucket: "bpsn-74f1b.firebasestorage.app",
+    messagingSenderId: "1057707303676",
+    appId: "1:1057707303676:web:63dd292678dead41c2ed79",
+    measurementId: "G-DZGXBJERKQ"
+  };
+  const app  = initializeApp(cfg);
+  const db   = getDatabase(app);
   const stocksRef    = ref(db, 'stocks');
   const booksDataRef = ref(db, 'booksData');
   const roomsRef     = ref(db, 'rooms');
 
-  // —— Gestion des salles ——
-  const newRoomInput     = document.getElementById('new-room');
-  const addRoomBtn       = document.getElementById('add-room');
-  const roomListEl       = document.getElementById('room-list');
-  const manualRoomSelect = document.getElementById('manual-room');
-  const roomSelect       = document.getElementById('room-select');
+  // — DOM refs —
+  const
+    isbnForm      = document.getElementById('isbn-form'),
+    scanISBNBtn   = document.getElementById('scan-search-toggle'),
+    engineSelect  = document.getElementById('search-engine'),
+    filterRoomSel = document.getElementById('filter-room'),
+    newRoomInput  = document.getElementById('new-room'),
+    addRoomBtn    = document.getElementById('add-room'),
+    roomListEl    = document.getElementById('room-list'),
+    manualRoomSel = document.getElementById('manual-room'),
+    roomSelectEl  = document.getElementById('room-select'),
+    manualToggle  = document.getElementById('manual-add-toggle'),
+    manualForm    = document.getElementById('manual-add-form'),
+    scanManualBtn = document.getElementById('scan-manual-toggle'),
+    spinner       = document.getElementById('spinner'),
+    searchTabs    = document.getElementById('search-results'),
+    bookInfoEl    = document.getElementById('book-info'),
+    coverImg      = document.getElementById('cover'),
+    titleEl       = document.getElementById('title'),
+    authorEl      = document.getElementById('author'),
+    summaryEl     = document.getElementById('summary'),
+    fillBtn       = document.getElementById('fill-info-button'),
+    manualEditDiv = document.getElementById('manual-edit'),
+    editAuthor    = document.getElementById('manual-author'),
+    editSummary   = document.getElementById('manual-summary'),
+    selectRoom    = document.getElementById('room-select'),
+    stockSpan     = document.getElementById('stock'),
+    confirmBtn    = document.getElementById('confirm-add-book'),
+    cancelBtn     = document.getElementById('cancel-add-book'),
+    stockForm     = document.getElementById('stock-form'),
+    newStockInput = document.getElementById('new-stock'),
+    textFilter    = document.getElementById('search-book'),
+    bookListEl    = document.getElementById('book-list'),
+    totalCountEl  = document.getElementById('total-books-count'),
+    scannerCont   = document.getElementById('scanner-container'),
+    scannerVideo  = document.getElementById('scanner-video'),
+    stopScanBtn   = document.getElementById('stop-scan');
 
-  onValue(roomsRef, snap => renderRooms(snap.val() || {}));
-  function renderRooms(rooms) {
-    roomListEl.innerHTML       = '';
-    manualRoomSelect.innerHTML = '<option value="">Salle…</option>';
-    roomSelect.innerHTML       = '<option value="">—</option>';
-    Object.values(rooms).forEach(name => {
-      // ligne + bouton suppr.
-      const li = document.createElement('li');
-      li.textContent = name + ' ';
-      const del = document.createElement('button');
-      del.textContent = '🗑️';
-      del.onclick = () => set(child(roomsRef, encodeURIComponent(name)), null);
-      li.appendChild(del);
-      roomListEl.appendChild(li);
-      // options selects
-      [manualRoomSelect, roomSelect].forEach(sel => {
-        const opt = document.createElement('option');
-        opt.value = name; opt.text = name;
-        sel.appendChild(opt);
-      });
-    });
-  }
-
-  addRoomBtn.addEventListener('click', async () => {
-    const name = newRoomInput.value.trim();
-    if (!name) return alert('Nom de salle requis');
-    await set(child(roomsRef, encodeURIComponent(name)), name);
-    newRoomInput.value = '';
-  });
-
-  // —— Utilitaires communs ——
-  const spinner = document.getElementById('spinner');
+  // — Utilitaires —
   const showSpinner = () => spinner.classList.remove('hidden');
   const hideSpinner = () => spinner.classList.add('hidden');
+  const sanitize    = s => s.replace(/[-\s]/g, '');
+  const validISBN   = s => (s.length===10||s.length===13)&&!isNaN(s);
 
-  const engineSelect = document.getElementById('search-engine');
-  if (engineSelect) {
-    const stored = localStorage.getItem('search-engine');
-    if (stored) engineSelect.value = stored;
-    engineSelect.addEventListener('change', () => {
-      localStorage.setItem('search-engine', engineSelect.value);
-    });
+  function setCover(el,isbn){
+    el.src = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
+    el.onerror = ()=>el.style.display='none';
+    el.onload  = ()=>el.style.display='block';
   }
 
-  function sanitizeISBN(isbn) {
-    return isbn.replace(/[-\s]/g, "");
-  }
-  function isValidISBN(isbn) {
-    return (isbn.length === 10 || isbn.length === 13) && !isNaN(isbn);
-  }
-
-  // Masque l'image si elle ne charge pas, affiche si OK
-  function setCoverImage(imgEl, isbn) {
-    imgEl.src = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
-    imgEl.onerror = () => { imgEl.style.display = 'none'; };
-    imgEl.onload  = () => { imgEl.style.display = 'block'; };
-  }
-
-  function parseVolumeInfo(v) {
+  function parseVol(v){
     return {
-      title:   v.title              || "Sans titre",
-      author:  v.authors?.[0]       || "Auteur inconnu",
-      summary: v.description        || "Aucune information",
-      cover:   v.imageLinks?.thumbnail || null
+      title:   v.title            || "Sans titre",
+      author:  v.authors?.[0]     || "Auteur inconnu",
+      summary: v.description      || "Aucune info",
+      cover:   v.imageLinks?.thumbnail|| null
     };
   }
 
-  async function fetchBookDataFromAPIs(isbn) {
+  async function fetchAPIs(isbn){
     try {
-      const g = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`).then(r => r.json());
-      if (g.items?.length) return { googleBooksResults: g.items };
-    } catch {}
+      const g = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
+                        .then(r=>r.json());
+      if(g.items?.length) return { googleBooksResults: g.items };
+    }catch{}
     try {
       const o = await fetch(`https://openlibrary.org/isbn/${isbn}.json`);
-      if (o.ok) {
+      if(o.ok){
         const d = await o.json();
-        let author = "Auteur inconnu", summary = "Aucune information";
-        if (typeof d.by_statement === 'string') author = d.by_statement;
-        if (typeof d.description  === 'string') summary = d.description;
-        else if (d.description?.value)    summary = d.description.value;
-        return { openLibraryResult: { title: d.title||"Sans titre", author, summary } };
+        let author="Auteur inconnu", summary="Aucune info";
+        if(typeof d.by_statement==='string') author=d.by_statement;
+        if(typeof d.description==='string')  summary=d.description;
+        else if(d.description?.value)       summary=d.description.value;
+        return { openLibraryResult:{ title:d.title||"Sans titre",author,summary } };
       }
-    } catch {}
+    }catch{}
     return null;
   }
 
-  async function completeWithGoogleIfNeeded(isbn, baseData) {
-    let { title, author, summary } = baseData;
-    if (author === "Auteur inconnu" || summary.length < 50) {
-      try {
-        const g  = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`).then(r => r.json());
-        const vi = g.items?.[0]?.volumeInfo || {};
-        if (author === "Auteur inconnu" && vi.authors?.[0]) author = vi.authors[0];
-        if (vi.description && vi.description.length > summary.length) summary = vi.description;
-      } catch {}
+  // — Chargement et rendu des salles —
+  onValue(roomsRef, snap=>{
+    const rooms = snap.val()||{};
+    // remplir détail & selects
+    roomListEl.innerHTML = '';
+    ['',''].forEach( ()=>{} );
+    manualRoomSel.innerHTML = '<option value="">Salle…</option>';
+    roomSelectEl.innerHTML  = '<option value="">—</option>';
+    filterRoomSel.innerHTML = '<option value="">Toutes les salles</option>';
+    Object.values(rooms).forEach(name=>{
+      // liste
+      const li = document.createElement('li');
+      li.textContent = name+' ';
+      const del = document.createElement('button');
+      del.textContent='🗑️';
+      del.onclick = ()=> set(child(roomsRef, encodeURIComponent(name)),null);
+      li.appendChild(del);
+      roomListEl.appendChild(li);
+      // selects
+      [manualRoomSel,roomSelectEl,filterRoomSel].forEach(sel=>{
+        const opt=document.createElement('option');
+        opt.value=name; opt.textContent=name;
+        sel.appendChild(opt);
+      });
+    });
+  });
+
+  addRoomBtn.addEventListener('click', async()=>{
+    const nm=newRoomInput.value.trim();
+    if(!nm) return alert('Nom requis');
+    await set(child(roomsRef, encodeURIComponent(nm)), nm);
+    newRoomInput.value='';
+  });
+
+  // — Stock, texte & salle filtres —
+  textFilter.addEventListener('input', renderList);
+  filterRoomSel.addEventListener('change', renderList);
+
+  // — Données et rendu de la liste —
+  let allBooks={}, allStocks={};
+  function updateTotal(){
+    const tot = Object.values(allStocks).reduce((a,v)=>a+(v||0),0);
+    totalCountEl.textContent = `Total des livres disponibles : ${tot}`;
+  }
+
+  function renderList(){
+    bookListEl.innerHTML = '';
+    const txt   = textFilter.value.toLowerCase();
+    const roomF = filterRoomSel.value;
+
+    for(const isbn in allBooks){
+      const b = allBooks[isbn], st = allStocks[isbn]||0;
+      if(txt && !b.title.toLowerCase().includes(txt)&&!b.author.toLowerCase().includes(txt)) continue;
+      if(roomF && b.room!==roomF) continue;
+
+      const item=document.createElement('div');
+      item.className='book-item';
+      // image
+      const img=document.createElement('img');
+      img.className='book-cover';
+      if(b.cover){ img.src=b.cover; img.onerror=()=>img.style.display='none'; }
+      else img.style.display='none';
+      item.appendChild(img);
+
+      const det=document.createElement('div');
+      det.className='book-details';
+      const cls = st>0 ? (st<5?'stock-low':'stock-ok') : 'stock-out';
+      det.innerHTML=`
+        <div class="book-title">${b.title} <em>(${isbn})</em></div>
+        <div class="book-author">Auteur : ${b.author}</div>
+        <div class="book-summary">Résumé : ${b.summary}</div>
+        <div class="book-stock ${cls}">${st>0?`Stock : ${st}`:'Hors stock'}</div>
+        <div class="book-room">Salle : ${b.room||'—'}</div>
+        <div class="book-actions">
+          <button onclick="deleteBook('${isbn}')">🗑️</button>
+          <button onclick="editManualBook('${isbn}')">✏️</button>
+        </div>`;
+      item.appendChild(det);
+      bookListEl.appendChild(item);
     }
-    return { title, author, summary };
+
+    updateTotal();
   }
 
-  // —— Liste & rendu ——
-  let allBooks = {}, allStocks = {};
-  function updateTotalBooksCount() {
-    const total = Object.values(allStocks).reduce((a, v) => a + (v || 0), 0);
-    document.getElementById('total-books-count').textContent =
-      `Total des livres disponibles : ${total}`;
-  }
-
-  function renderBookList(filter = '') {
-  const list = document.getElementById('book-list');
-  list.innerHTML = '';
-  const f = filter.toLowerCase();
-
-  for (const isbn in allBooks) {
-    const b     = allBooks[isbn];
-    const stock = allStocks[isbn] || 0;
-    if (f && !b.title.toLowerCase().includes(f) && !b.author.toLowerCase().includes(f)) continue;
-
-    const item = document.createElement('div');
-    item.className = 'book-item';
-
-    // — couverture —
-    const imgEl = document.createElement('img');
-    imgEl.className = 'book-cover';
-    if (b.cover) {
-      imgEl.src = b.cover;
-      imgEl.onerror = () => { imgEl.style.display = 'none'; };
-    } else {
-      imgEl.style.display = 'none';
-    }
-    item.appendChild(imgEl);
-
-    // — détails —
-    const details = document.createElement('div');
-    details.className = 'book-details';
-    details.innerHTML = `
-      <div class="book-title"><strong>${b.title}</strong> <em>(${isbn})</em></div>
-      <div class="book-author">Auteur : ${b.author}</div>
-      <div class="book-summary">Résumé : ${b.summary}</div>
-      <div class="book-stock ${ stock>0
-          ? (stock<5 ? 'stock-low':'stock-ok')
-          : 'stock-out' }">
-        ${ stock>0
-          ? `Stock : ${stock}`
-          : 'Hors stock' }
-      </div>
-      <div class="book-room">Salle : ${b.room||'—'}</div>
-      <div class="book-actions">
-        <button onclick="deleteBook('${isbn}')">🗑️</button>
-        <button onclick="editManualBook('${isbn}')">✏️</button>
-      </div>`;
-    item.appendChild(details);
-
-    list.appendChild(item);
-  }
-
-  updateTotalBooksCount();
-}
-
-  window.deleteBook = isbn => {
-    if (!confirm(`Supprimer ${isbn} ?`)) return;
+  window.deleteBook = isbn=>{
+    if(!confirm(`Supprimer ${isbn} ?`)) return;
     Promise.all([
       set(child(stocksRef, isbn), null),
       set(child(booksDataRef, isbn), null)
     ]);
   };
 
-  // —— Recherche par ISBN ——
-  const isbnForm       = document.getElementById('isbn-form');
-  const bookInfoEl     = document.getElementById('book-info');
-  const coverImgEl     = document.getElementById('cover');
-  const titleEl        = document.getElementById('title');
-  const authorEl       = document.getElementById('author');
-  const summaryEl      = document.getElementById('summary');
-  const stockEl        = document.getElementById('stock');
-  const roomSelectMain = document.getElementById('room-select');
-  const confirmBtn     = document.getElementById('confirm-add-book');
-  const cancelBtn      = document.getElementById('cancel-add-book');
-  const searchIn       = document.getElementById('search-book');
-  const tabsDiv        = document.getElementById('search-results');
-  const fillBtn        = document.getElementById('fill-info-button');
-  const manualEditDiv  = document.getElementById('manual-edit');
-  const editAuthor     = document.getElementById('manual-author');
-  const editSummary    = document.getElementById('manual-summary');
+  // — Écoute Firebase pour liste —
+  onValue(booksDataRef, snap=>{
+    allBooks = snap.val()||{};
+    onValue(stocksRef, snap2=>{
+      allStocks = snap2.val()||{};
+      renderList();
+    });
+  });
 
+
+  // —— Recherche par ISBN ——
   let pending       = null;
   let currentISBN   = null;
 
@@ -297,11 +268,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     bookInfoEl.classList.add('hidden');
-    tabsDiv.innerHTML = ''; tabsDiv.classList.add('hidden');
+    searchTabs.innerHTML = ''; searchTabs.classList.add('hidden');
 
     // Plusieurs résultats Google → onglets
     if (data?.googleBooksResults?.length > 1) {
-      tabsDiv.classList.remove('hidden');
+      searchTabs.classList.remove('hidden');
       data.googleBooksResults.forEach((it, i) => {
         const v = parseVolumeInfo(it.volumeInfo || {});
         const btn = document.createElement('button');
@@ -312,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
           btn.classList.add('active');
           showBookInfos(v.title, v.author, v.summary, v.cover);
         }
-        tabsDiv.appendChild(btn);
+        searchTabs.appendChild(btn);
       });
 
     // Un seul résultat Google
@@ -380,9 +351,9 @@ document.addEventListener('DOMContentLoaded', () => {
     bookInfoEl.classList.add('hidden');
   };
 
-  // —— Formulaire manuel ——
+  // —— Formulaire manuel —__
   const manualToggleBtn = document.getElementById('manual-add-toggle');
-  const manualForm      = document.getElementById('manual-add-form');
+  // manualForm déjà déclaré plus haut
   manualToggleBtn.onclick = () => manualForm.classList.toggle('hidden');
 
   manualForm.onsubmit = async e => {
@@ -430,11 +401,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('manual-cover-url').value    = d.cover || "";
     document.getElementById('manual-room').value         = d.room  || "";
     document.getElementById('manual-stock').value        = sv;
-    isEditing   = true;
-    editingISBN = isbn;
-    document.getElementById('manual-isbn').setAttribute('readonly', '');
-    manualForm.classList.remove('hidden');
-  };
+      isEditing   = true;
+  editingISBN = isbn;
+  document.getElementById('manual-isbn').setAttribute('readonly', '');
+  manualForm.classList.remove('hidden');
+   manualForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  manualForm.focus(); // optionnel : met le focus dans le formulaire
+};
 
   // —— Écoute temps réel Firebase pour la liste ——
   onValue(booksDataRef, snapB => {
@@ -445,10 +418,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // —— Scanner QuaggaJS ——
+  // —— Scanner QuaggaJS —__
   const scannerContainer   = document.getElementById('scanner-container');
   const scannerTarget      = document.getElementById('scanner-video');
-  const stopScanBtn        = document.getElementById('stop-scan');
+  // stopScanBtn déjà déclaré plus haut
   const scanSearchToggle   = document.getElementById('scan-search-toggle');
   const scanManualToggle   = document.getElementById('scan-manual-toggle');
   scannerContainer.classList.add('hidden');
