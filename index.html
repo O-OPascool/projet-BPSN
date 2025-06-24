@@ -57,21 +57,23 @@
       <input type="text" id="manual-cover-url"    placeholder="URL couverture ou Data URI (optionnel)">
       <select id="manual-room" required>
         <option value="">Salle…</option>
-        <option value="Salon">Salon</option>
-        <option value="Bureau">Bureau</option>
-        <option value="Chambre">Chambre</option>
+        <!-- ces options seront injectées dynamiquement par script.js -->
       </select>
       <input type="number" id="manual-stock"      placeholder="Stock initial" min="0">
       <button type="submit">Ajouter / Mettre à jour</button>
     </form>
 
-    <!-- Gestion des salles -->
-    <section class="form">
-      <h2>Gestion des salles</h2>
-      <input type="text" id="new-room" placeholder="Nouvelle salle…">
-      <button type="button" id="add-room">Ajouter salle</button>
-      <ul id="room-list"></ul>
-    </section>
+    <!-- Gestion des salles (toggle avec <details>) -->
+    <details id="rooms-details" style="margin:2rem 0;">
+      <summary style="cursor:pointer; font-size:1.2rem; font-weight:bold; color:#66b0ff;">
+        ⚙️ Gérer les salles
+      </summary>
+      <div id="rooms-management" style="padding:1rem 0;">
+        <input type="text" id="new-room" placeholder="Nouvelle salle…">
+        <button id="add-room">Ajouter salle</button>
+        <ul id="room-list"></ul>
+      </div>
+    </details>
 
     <!-- Overlay Scanner QuaggaJS -->
     <div id="scanner-container" class="hidden">
@@ -104,9 +106,7 @@
       <label for="room-select">Salle :</label>
       <select id="room-select">
         <option value="">—</option>
-        <option value="Salon">Salon</option>
-        <option value="Bureau">Bureau</option>
-        <option value="Chambre">Chambre</option>
+        <!-- options injectées dynamiquement -->
       </select>
 
       <p><strong>Disponibilité :</strong> <span id="stock" class="stock-info">—</span></p>
@@ -124,7 +124,13 @@
 
     <!-- Filtre + Liste des livres -->
     <h2>Liste des Livres Disponibles</h2>
-    <input type="text" id="search-book" placeholder="Rechercher par titre ou auteur…">
+    <div class="search-filters" style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+      <input type="text" id="search-book" placeholder="Rechercher par titre ou auteur…" style="flex:1; min-width:200px;">
+      <select id="filter-room" style="width:10rem;">
+        <option value="">Toutes les salles</option>
+        <!-- options injectées dynamiquement -->
+      </select>
+    </div>
     <div id="book-list"></div>
     <div id="total-books-count" class="total-books">Total des livres disponibles : 0</div>
   </div>
