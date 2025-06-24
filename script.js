@@ -491,8 +491,8 @@ document.addEventListener('DOMContentLoaded', () => {
 const manualToggleBtn = document.getElementById('manual-add-toggle');
   const manualForm      = document.getElementById('manual-add-form');
 
-  manualToggleBtn.addEventListener('click', () => {
-    manualForm.classList.toggle('hidden');
+  manualForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
   });
 
   manualForm.addEventListener('submit', async (e) => {
@@ -528,15 +528,28 @@ console.log("coverUrl brut :", coverUrl);
 
   const bookData = { title, author, summary, cover };
   // On écrit d’abord les données du livre, puis le stock choisi
-  await Promise.all([
-    set(child(booksDataRef, isbn), bookData),
-    set(child(stocksRef,      isbn), stockVal)
-  ]);
+ const targetISBN = isEditing ? editingISBN : isbn;
 
-  alert(`Livre ajouté avec succès (stock initial : ${stockVal}).`);
-  manualForm.reset();
-  manualForm.classList.add('hidden');
-});
+// Écrit les données du livre et le stock
+await Promise.all([
+  set(child(booksDataRef, targetISBN), bookData),
+  set(child(stocksRef,      targetISBN), stockVal)
+]);
+
+alert(
+  isEditing
+    ? `Livre ${targetISBN} mis à jour (stock : ${stockVal}).`
+    : `Livre ajouté (stock : ${stockVal}).`
+);
+
+// Réinitialise le mode édition
+isEditing   = false;
+editingISBN = null;
+document.getElementById('manual-isbn').removeAttribute('readonly');
+
+// Masque le formulaire
+manualForm.reset();
+manualForm.classList.add('hidden');
 
 
   initializeBookListListener();
