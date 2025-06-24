@@ -171,47 +171,55 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderBookList(filter = '') {
-    const list = document.getElementById('book-list');
-    list.innerHTML = '';
-    const f = filter.toLowerCase();
-    for (const isbn in allBooks) {
-      const b     = allBooks[isbn];
-      const stock = allStocks[isbn] || 0;
-      if (f && !b.title.toLowerCase().includes(f) && !b.author.toLowerCase().includes(f)) continue;
+  const list = document.getElementById('book-list');
+  list.innerHTML = '';
+  const f = filter.toLowerCase();
 
-      // Création DOM pour chaque livre
-      const item = document.createElement('div');
-      item.className = 'book-item';
+  for (const isbn in allBooks) {
+    const b     = allBooks[isbn];
+    const stock = allStocks[isbn] || 0;
+    if (f && !b.title.toLowerCase().includes(f) && !b.author.toLowerCase().includes(f)) continue;
 
-      // Image — cachée si pas de cover ou si erreur
-      const imgEl = document.createElement('img');
-      imgEl.className = 'book-cover';
-      if (b.cover) {
-        imgEl.src = b.cover;
-        imgEl.onerror = () => { imgEl.style.display = 'none'; };
-      } else {
-        imgEl.style.display = 'none';
-      }
-      item.appendChild(imgEl);
+    const item = document.createElement('div');
+    item.className = 'book-item';
 
-      // Détails
-      const details = document.createElement('div');
-      details.className = 'book-details';
-      details.innerHTML = `
-        <div><strong>${b.title}</strong> <em>(${isbn})</em></div>
-        <div>Auteur : ${b.author}</div>
-        <div>Résumé : ${b.summary}</div>
-        <div>Stock : ${stock}</div>
-        <div>Salle : ${b.room || '—'}</div>
+    // — couverture —
+    const imgEl = document.createElement('img');
+    imgEl.className = 'book-cover';
+    if (b.cover) {
+      imgEl.src = b.cover;
+      imgEl.onerror = () => { imgEl.style.display = 'none'; };
+    } else {
+      imgEl.style.display = 'none';
+    }
+    item.appendChild(imgEl);
+
+    // — détails —
+    const details = document.createElement('div');
+    details.className = 'book-details';
+    details.innerHTML = `
+      <div class="book-title"><strong>${b.title}</strong> <em>(${isbn})</em></div>
+      <div class="book-author">Auteur : ${b.author}</div>
+      <div class="book-summary">Résumé : ${b.summary}</div>
+      <div class="book-stock ${ stock>0
+          ? (stock<5 ? 'stock-low':'stock-ok')
+          : 'stock-out' }">
+        ${ stock>0
+          ? `Stock : ${stock}`
+          : 'Hors stock' }
+      </div>
+      <div class="book-room">Salle : ${b.room||'—'}</div>
+      <div class="book-actions">
         <button onclick="deleteBook('${isbn}')">🗑️</button>
         <button onclick="editManualBook('${isbn}')">✏️</button>
-      `;
-      item.appendChild(details);
+      </div>`;
+    item.appendChild(details);
 
-      list.appendChild(item);
-    }
-    updateTotalBooksCount();
+    list.appendChild(item);
   }
+
+  updateTotalBooksCount();
+}
 
   window.deleteBook = isbn => {
     if (!confirm(`Supprimer ${isbn} ?`)) return;
