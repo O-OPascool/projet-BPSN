@@ -217,11 +217,13 @@ button:hover {
 }
 
 #cover {
-  max-width: 100px;
-  height: auto;
+  width: 100px;
+  aspect-ratio: 2/3;
+  object-fit: cover;
   border-radius: 4px;
   margin: 10px auto;
   display: block;
+  background: #f0f0f0;
 }
 
 /* Info stock */
@@ -250,16 +252,27 @@ button:hover {
   border-bottom: 1px solid #ddd;
   padding: 10px 0;
   display: flex;
-  gap: 10px;
+  gap: 1rem;
+  align-items: flex-start;
 }
 
 .book-item:last-child {
   border-bottom: none;
 }
 
+/* Couvertures responsive : 20% de la largeur, ratio 2/3 */
 .book-cover {
-  max-width: 80px;
+  width: 20%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
   border-radius: 4px;
+  background: #f0f0f0;
+  display: block;
+}
+
+/* Si l’attribut src est vide on cache l’élément */
+.book-cover[src=""] {
+  display: none;
 }
 
 .book-details {
@@ -411,7 +424,7 @@ button:hover {
   border: 1px solid #555;
 }
 
-/* Vidéo de démonstration dimensionnée */
+/* Vidéo de démonstration */
 .fonction-video {
   display: block;
   margin: 0 auto 20px auto;
