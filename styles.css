@@ -261,16 +261,17 @@ button:hover {
 }
 
 /* Couvertures responsive : 20% de la largeur, ratio 2/3 */
-.book-cover {
-  width: 20%;
-  aspect-ratio: 2/3;
-  object-fit: cover;
+.book-cover,
+#cover {
+  width: 100px;       /* largeur fixe */
+  height: 150px;      /* hauteur fixe */
+  object-fit: cover;  /* recadre l’image pour remplir entièrement */
+  display: block;     /* s’assure que c’est un block */
   border-radius: 4px;
-  background: #f0f0f0;
-  display: block;
+  background: #f0f0f0; /* couleur de fond si l’image manque */
 }
 
-/* Si l’attribut src est vide on cache l’élément */
+/* Cache la balise img si src vide (optionnel) */
 .book-cover[src=""] {
   display: none;
 }
