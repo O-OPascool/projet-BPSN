@@ -7,7 +7,6 @@
 
   <!-- Applique le thème enregistré avant le chargement du CSS -->
   <script>
-    // si l'utilisateur a déjà choisi 'dark' OU si le système est en dark mode ET qu'aucun choix n'est enregistré
     if (
       localStorage.getItem('theme') === 'dark' ||
       (!localStorage.getItem('theme') &&
@@ -19,15 +18,12 @@
     }
   </script>
 
-  <!-- Importation d'une police moderne depuis Google Fonts -->
+  <!-- Google Fonts & préconnexion OpenLibrary -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-  <!-- Préconnexion pour accélérer le chargement des couvertures Open Library -->
   <link rel="preconnect" href="https://covers.openlibrary.org">
-  <!-- Votre fichier CSS principal -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Barre de navigation moderne -->
   <header>
     <nav class="navbar">
       <a href="index.html" class="navbar-brand">BIBLIO</a>
@@ -38,42 +34,41 @@
     </nav>
   </header>
 
-  <!-- Contenu principal de la page -->
   <div class="container">
     <h1>Recherche et Gestion de Stock</h1>
 
-    <!-- Formulaire pour rechercher un livre via ISBN -->
+    <!-- Recherche ISBN -->
     <form id="isbn-form" class="form">
       <input type="text" id="isbn" placeholder="Entrez un ISBN (10 ou 13 chiffres)" required>
-
       <select id="search-engine" title="Choisissez le moteur">
         <option value="auto" selected>Auto</option>
         <option value="google">Google</option>
         <option value="openlibrary">O.Library</option>
       </select>
-
       <button type="submit">Rechercher</button>
     </form>
 
-<!-- Formulaire manuel -->
+    <!-- Bouton afficher/masquer le formulaire manuel -->
     <button id="manual-add-toggle">➕ Ajouter un livre manuellement</button>
-   <form id="manual-add-form" class="form hidden">
-  <input type="text"  id="manual-title"      placeholder="Titre du livre"               required>
-  <input type="text"  id="manual-author-full" placeholder="Auteur du livre"               required>
-  <textarea      id="manual-summary-full"     placeholder="Résumé" rows="5"          required></textarea>
-  <input type="text"  id="manual-isbn"         placeholder="ISBN unique (obligatoire)"  required>
-  <input type="text" id="manual-cover-url" placeholder="URL de la couverture ou Data URI (optionnel)">
-  <input type="number" id="manual-stock"       placeholder="Stock initial" min="0">
-  <button type="submit">Ajouter le livre</button>
-</form>
 
-    <!-- Spinner de chargement -->
+    <!-- Formulaire manuel pour ajout / édition -->
+    <form id="manual-add-form" class="form hidden">
+      <input type="text" id="manual-title"      placeholder="Titre du livre"                required>
+      <input type="text" id="manual-author-full" placeholder="Auteur du livre"               required>
+      <textarea id="manual-summary-full"         placeholder="Résumé" rows="5"            required></textarea>
+      <input type="text" id="manual-isbn"         placeholder="ISBN unique (obligatoire)"  required>
+      <input type="text" id="manual-cover-url"    placeholder="URL couverture ou Data URI (optionnel)">
+      <input type="number" id="manual-stock"      placeholder="Stock initial" min="0">
+      <button type="submit">Ajouter / Mettre à jour</button>
+    </form>
+
+    <!-- Spinner -->
     <div id="spinner" class="spinner hidden"></div>
 
-    <!-- Résultats multiples sous forme d'onglets -->
+    <!-- Onglets résultats Google -->
     <div id="search-results" class="tabs hidden"></div>
 
-    <!-- Informations sur le livre sélectionné -->
+    <!-- Affichage infos livre sélectionné -->
     <div id="book-info" class="hidden">
       <img id="cover" alt="Image de couverture">
       <p><strong>Titre :</strong> <span id="title"></span></p>
@@ -82,20 +77,24 @@
 
       <button id="fill-info-button" class="hidden">Compléter les informations</button>
 
+      <!-- Edition manuelle d'un livre trouvé via ISBN -->
       <div id="manual-edit" class="hidden">
         <label for="manual-author">Auteur :</label>
         <input type="text" id="manual-author">
         <label for="manual-summary">Résumé :</label>
-        <textarea id="manual-summary" rows="5" cols="40"></textarea>
+        <textarea id="manual-summary" rows="5"></textarea>
         <button id="save-manual-info">Enregistrer</button>
         <button id="cancel-manual-info">Annuler</button>
       </div>
 
-      <p><strong>Disponibilité :</strong> <span id="stock" class="stock-info">Vérification en cours...</span></p>
+      <p><strong>Disponibilité :</strong>
+        <span id="stock" class="stock-info">Vérification en cours...</span>
+      </p>
 
       <button id="confirm-add-book" style="display: none;">Confirmer l'ajout</button>
-      <button id="cancel-add-book" style="display: none;">Annuler</button>
+      <button id="cancel-add-book"  style="display: none;">Annuler</button>
 
+      <!-- Mise à jour du stock pour livre existant -->
       <form id="stock-form" class="stock-form">
         <label for="new-stock">Mettre à jour le stock :</label>
         <input type="number" id="new-stock" placeholder="Nombre d'exemplaires" required>
@@ -109,11 +108,10 @@
     <div id="total-books-count" class="total-books">Total des livres disponibles : 0</div>
   </div>
 
-  <!-- Module JS principal -->
+  <!-- Script principal -->
   <script type="module" src="script.js"></script>
 
-  <!-- Pied de page -->
-  <footer class="text-center py-6 bg-gray-200 dark:bg-gray-800 dark:text-gray-400 transition-colors duration-500" data-aos="fade-up">
+  <footer class="text-center py-6 bg-gray-200 dark:bg-gray-800 dark:text-gray-400 transition-colors duration-500">
     <p>&copy; 2025 - Chef d'œuvre BIBLIO<br>Tous droits réservés</p>
   </footer>
 </body>
