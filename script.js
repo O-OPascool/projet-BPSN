@@ -1,5 +1,5 @@
 // script.js
-// Combinaison Google Books / Open Library, édition manuelle et gestion optimisée des couvertures
+// Combinaison Google Books / Open Library, édition manuelle, scan de codes-barres et gestion optimisée des couvertures
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
 import { getDatabase, ref, child, set, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
@@ -11,7 +11,7 @@ let editingISBN = null;
 // ————————————————————————————————————————————
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDKE...",
+  apiKey: "AIzaSyDKE…",
   authDomain: "bpsn-74f1b.firebaseapp.com",
   databaseURL: "https://bpsn-74f1b-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "bpsn-74f1b",
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.deleteBook = isbn => {
-    if(confirm(`Confirmer la suppression du livre ${isbn} ?`)){
+    if(confirm(`Confirme la suppression du livre ${isbn} ?`)){
       Promise.all([
         set(child(stocksRef, isbn), null),
         set(child(booksDataRef, isbn), null)
@@ -241,9 +241,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let data=null;
     const eng=engineSelect.value;
     if(eng==='google'){
-      try{ data=await fetchBookDataFromAPIs(raw); }catch{}
+      data=await fetchBookDataFromAPIs(raw);
     } else if(eng==='openlibrary'){
-      try{ data=await fetchBookDataFromAPIs(raw); }catch{}
+      data=await fetchBookDataFromAPIs(raw);
+      if(data?.openLibraryResult){
+        data.openLibraryResult = await completeWithGoogleIfNeeded(raw, data.openLibraryResult);
+      }
     } else {
       data=await fetchBookDataFromAPIs(raw);
       if(!data && raw.length===10){
@@ -263,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const {title,author,summary,cover}=parseVolumeInfo(vi);
           const btn=document.createElement('button');
           btn.className='tab';
-          btn.textContent=`${title} - ${author}`;
+          btn.textContent=`${title} – ${author}`;
           btn.onclick=()=>showBookInfos(title,author,summary,cover);
           if(i===0){btn.classList.add('active'); showBookInfos(title,author,summary,cover);}
           tabsDiv.appendChild(btn);
@@ -273,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const {title,author,summary,cover}=parseVolumeInfo(arr[0].volumeInfo||{});
         showBookInfos(title,author,summary,cover);
       }
-    } else if(data?.openLibraryResult){
+    } else if(data?.openLibraryResult) {
       const {title,author,summary}=data.openLibraryResult;
       showBookInfos(title,author,summary,null);
     } else {
@@ -342,7 +345,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Ajout manuel + édition directe
   const manualToggleBtn = document.getElementById('manual-add-toggle');
   const manualForm      = document.getElementById('manual-add-form');
-  const manualAddToggle = manualToggleBtn;
   manualToggleBtn.addEventListener('click',()=>manualForm.classList.toggle('hidden'));
 
   window.editManualBook = async isbn=>{
@@ -360,8 +362,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('manual-stock').value       = sv;
     isEditing   = true;
     editingISBN = isbn;
-    document.getElementById('manual-isbn').setAttribute('readonly','readonly');
-    manualAddToggle.classList.remove('hidden');
+    document.getElementById('manual-isbn').setAttribute('readonly','');
+    manualForm.classList.remove('hidden');
   };
 
   manualForm.addEventListener('submit',async e=>{
@@ -402,4 +404,58 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initializeBookListListener();
+
+  // ——— Scanner de code-barres avec QuaggaJS ———
+  const scannerContainer = document.getElementById('scanner-container');
+  const scannerVideo     = document.getElementById('scanner-video');
+  const stopScanBtn      = document.getElementById('stop-scan');
+  const scanSearchToggle = document.getElementById('scan-search-toggle');
+  const scanManualToggle = document.getElementById('scan-manual-toggle');
+
+  function startScanner(onDetected) {
+    scannerContainer.classList.remove('hidden');
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: scannerVideo,
+        constraints: { facingMode: "environment" }
+      },
+      decoder: { readers: ["ean_reader","ean_13_reader"] }
+    }, err => {
+      if (err) { console.error(err); alert("Pas d'accès caméra"); return; }
+      Quagga.start();
+      Quagga.onDetected(data => {
+        const code = data.codeResult.code;
+        if (/^\d{10,13}$/.test(code)) {
+          Quagga.stop();
+          scannerContainer.classList.add('hidden');
+          onDetected(code);
+        }
+      });
+    });
+  }
+
+  function stopScanner() {
+    Quagga.stop();
+    scannerContainer.classList.add('hidden');
+  }
+
+  scanSearchToggle.addEventListener('click', () => {
+    startScanner(code => {
+      document.getElementById('isbn').value = code;
+      isbnForm.dispatchEvent(new Event('submit'));
+    });
+  });
+
+  scanManualToggle.addEventListener('click', () => {
+    startScanner(code => {
+      const mi = document.getElementById('manual-isbn');
+      mi.value = code;
+      mi.focus();
+    });
+  });
+
+  stopScanBtn.addEventListener('click', stopScanner);
+  // —————————————————————————————
 });
