@@ -216,27 +216,21 @@ button:hover {
   text-align: center;
 }
 
+/* Couvertures uniformisées */
+.book-cover,
 #cover {
   width: 100px;
-  aspect-ratio: 2/3;
+  height: 150px;
   object-fit: cover;
   border-radius: 4px;
-  margin: 10px auto;
+  margin: 0 auto;
   display: block;
   background: #f0f0f0;
 }
 
-/* Info stock */
-.stock-info {
-  font-weight: bold;
-}
-
-.in-stock {
-  color: green;
-}
-
-.out-of-stock {
-  color: red;
+/* Cache la balise img si src vide */
+.book-cover[src=""] {
+  display: none;
 }
 
 /* Liste des livres */
@@ -260,38 +254,60 @@ button:hover {
   border-bottom: none;
 }
 
-/* Couvertures responsive : 20% de la largeur, ratio 2/3 */
-.book-cover,
-#cover {
-  width: 100px;       /* largeur fixe */
-  height: 150px;      /* hauteur fixe */
-  object-fit: cover;  /* recadre l’image pour remplir entièrement */
-  display: block;     /* s’assure que c’est un block */
-  border-radius: 4px;
-  background: #f0f0f0; /* couleur de fond si l’image manque */
-}
-
-/* Cache la balise img si src vide (optionnel) */
-.book-cover[src=""] {
-  display: none;
-}
-
 .book-details {
   display: flex;
   flex-direction: column;
 }
 
+/* Mise en forme des lignes de détail */
+.book-details > div {
+  margin: 0.4rem 0;
+}
+
+/* Titre */
 .book-title {
   font-weight: bold;
   color: #007BFF;
 }
 
+/* Auteur */
 .book-author {
   font-style: italic;
   color: #555;
-  margin-top: 5px;
 }
 
+/* Résumé */
+.book-summary {
+  /* optionnel: font-style: italic; */
+}
+
+/* Stock avec couleur selon niveau */
+.book-stock {
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+  font-weight: bold;
+}
+.stock-ok  { background: rgba(  0,128,  0,0.1); color: green; }
+.stock-low { background: rgba(255,165,  0,0.1); color: orange; }
+.stock-out { background: rgba(255,  0,  0,0.1); color: red; }
+
+/* Salle en gris sombre */
+.book-room {
+  color: #666;
+  font-style: italic;
+}
+
+/* Actions (boutons) alignées à droite */
+.book-actions {
+  margin-top: 0.5rem;
+  text-align: right;
+}
+.book-actions button {
+  margin-left: 0.3rem;
+}
+
+/* Suppression */
 .delete-button {
   background-color: #d9534f;
   color: white;
@@ -301,11 +317,11 @@ button:hover {
   cursor: pointer;
   margin-top: 5px;
 }
-
 .delete-button:hover {
   background-color: #c9302c;
 }
 
+/* Barre de recherche et total */
 #search-book {
   width: 60%;
   padding: 10px;
