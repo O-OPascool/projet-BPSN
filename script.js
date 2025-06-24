@@ -502,7 +502,13 @@ const manualToggleBtn = document.getElementById('manual-add-toggle');
   const summary  = document.getElementById('manual-summary-full').value.trim();
   const isbn     = sanitizeISBN(document.getElementById('manual-isbn').value.trim());
   const coverUrl = document.getElementById('manual-cover-url').value.trim();
-  const cover    = coverUrl && /^https?:\/\//.test(coverUrl) ? coverUrl : "";
+ const cover = coverUrl && (/^https?:\/\//.test(coverUrl) || /^data:image\/[a-zA-Z]+;base64,/.test(coverUrl))
+  ? coverUrl
+  : "";
+
+console.log("coverUrl brut :", coverUrl);
+  console.log("cover validé ?", cover);
+
   const stockVal = parseInt(document.getElementById('manual-stock').value, 10) || 0;
   if (stockVal < 0) {
     alert("Le stock ne peut pas être négatif.");
@@ -521,6 +527,7 @@ const manualToggleBtn = document.getElementById('manual-add-toggle');
   }
 
   const bookData = { title, author, summary, cover };
+  // On écrit d’abord les données du livre, puis le stock choisi
   await Promise.all([
     set(child(booksDataRef, isbn), bookData),
     set(child(stocksRef,      isbn), stockVal)
