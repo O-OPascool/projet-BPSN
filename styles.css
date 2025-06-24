@@ -1,15 +1,43 @@
 /* =============================== */
-/* Styles pour le mode clair       */
+/* Gestion centralisée des variables */
+/* =============================== */
+:root {
+  --bg: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  --bg-dark: #121212;
+  --primary: #007BFF;
+  --primary-dark: #1a73e8;
+  --primary-hover: #0056b3;
+  --text: #333;
+  --text-dark: #e0e0e0;
+  --muted-bg: #f9f9f9;
+  --muted-bg-dark: #2a2a2a;
+  --overlay-bg: rgba(0,0,0,0.75);
+  --danger: #d9534f;
+  --danger-hover: #c9302c;
+}
+
+/* =============================== */
+/* Mode clair et mode sombre      */
 /* =============================== */
 body {
   font-family: 'Montserrat', sans-serif;
-  color: #333;
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  color: var(--text);
+  background: var(--bg);
+  transition: background 0.3s, color 0.3s;
+}
+.dark {
+  --bg: var(--bg-dark);
+  --text: var(--text-dark);
+  --primary: var(--primary-dark);
+  --primary-hover: var(--primary-dark);
+  --muted-bg: var(--muted-bg-dark);
 }
 
-/* Barre de navigation */
+/* =============================== */
+/* Barre de navigation            */
+/* =============================== */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -17,23 +45,17 @@ body {
   padding: 0 2rem;
   height: 60px;
   background-color: rgba(255,255,255,0.95);
+  backdrop-filter: blur(5px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
-  backdrop-filter: blur(5px);
 }
-
 .navbar-brand {
-  display: flex;
-  align-items: center;
-  font-family: 'Montserrat', sans-serif;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #333;
-  text-decoration: none;
+  color: var(--text);
 }
-
 .navbar-links {
   list-style: none;
   display: flex;
@@ -41,48 +63,50 @@ body {
   margin: 0;
   padding: 0;
 }
-
 .navbar-links a {
-  text-decoration: none;
-  color: #007BFF;
+  color: var(--primary);
   font-weight: 500;
+  text-decoration: none;
   transition: opacity 0.3s;
 }
-
 .navbar-links a:hover {
   opacity: 0.7;
 }
-
 .mode-toggle-btn {
   background: none;
   border: none;
   font-size: 1.2rem;
   cursor: pointer;
+  color: var(--text);
   transition: opacity 0.3s;
 }
-
 .mode-toggle-btn:hover {
   opacity: 0.7;
 }
 
-/* Conteneur principal */
+/* =============================== */
+/* Conteneur principal            */
+/* =============================== */
 .container {
   width: 90%;
   max-width: 800px;
   margin: 20px auto;
-  background: #fff;
+  background: var(--muted-bg);
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: background 0.3s;
 }
 
 /* Titres */
 h1, h2 {
   text-align: center;
-  color: #007BFF;
+  color: var(--primary);
 }
 
-/* Formulaires */
+/* =============================== */
+/* Formulaires et champs          */
+/* =============================== */
 .form,
 .stock-form {
   display: flex;
@@ -90,47 +114,52 @@ h1, h2 {
   align-items: center;
   margin-bottom: 20px;
 }
-
-select {
-  width: 100px;
-  padding: 5px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
+select,
 input[type="text"],
 input[type="number"],
 textarea {
   width: 80%;
+  max-width: 400px;
   padding: 10px;
   margin: 10px 0;
   border: 1px solid #ccc;
   border-radius: 4px;
+  background: #fff;
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+select {
+  width: 100px;
 }
 
+/* =============================== */
+/* Boutons                        */
+/* =============================== */
 button {
   padding: 10px 15px;
   border: none;
   border-radius: 4px;
-  background-color: #007BFF;
-  color: white;
+  background-color: var(--primary);
+  color: #fff;
   cursor: pointer;
   transition: background-color 0.3s;
   width: 130px;
   margin-bottom: 10px;
+}
+button:hover {
+  background-color: var(--primary-hover);
 }
 
 /* Bouton d'ajout manuel */
 #manual-add-toggle {
   display: block;
   margin: 15px auto;
-  background-color: #f8cbdb;
   width: 200px;
-}
-
-#manual-add-toggle:hover {
   background-color: #f8cbdb;
+  color: var(--text);
+}
+#manual-add-toggle:hover {
+  background-color: #f6a5c0;
 }
 
 /* Formulaire manuel */
@@ -139,288 +168,182 @@ button {
   padding: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background-color: #f9f9f9;
+  background-color: var(--muted-bg);
 }
 
-/* override ID specificity */
-#scanner-container.hidden {
-  display: none;
-}
-
-/* base style pour faire apparaître l’overlay */
-#scanner-container {
-  display: flex;
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.75);
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-/* Zone où Quagga va injecter son canvas/video */
-#scanner-video {
-  width: 80vw;
-  max-width: 400px;
-  border: 2px solid #fff;
-  border-radius: 4px;
-}
-
-/* Bouton « Arrêter le scan » */
-#stop-scan {
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background: #d9534f;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-#stop-scan:hover {
-  background-color: #c9302c;
-}
-
-
-/* En mode sombre, harmoniser le fond */
-.dark #manual-add-form {
-  background-color: #2a2a2a;
-  border-color: #555;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-.small-btn {
-  padding: 3px 6px;
-  font-size: 0.8em;
-  margin-left: 10px;
-}
-
-/* Spinner */
-.spinner {
-  border: 4px solid rgba(0,0,0,0.1);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border-left-color: #007BFF;
-  margin: 20px auto;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Masquer les éléments */
-.hidden {
-  display: none;
-}
-
-/* Section d'infos du livre */
+/* =============================== */
+/* Informations sur le livre       */
+/* =============================== */
 #book-info {
   margin-top: 20px;
   text-align: center;
 }
-
 #cover {
-  max-width: 100px;
-  height: auto;
-  border-radius: 4px;
-  margin: 10px auto;
   display: block;
+  margin: 10px auto;
+  max-width: 100px;
+  border-radius: 4px;
 }
 
 /* Info stock */
-.stock-info {
-  font-weight: bold;
-}
+.stock-info { font-weight: bold; }
+.in-stock   { color: green; }
+.out-of-stock { color: red; }
 
-.in-stock {
-  color: green;
-}
-
-.out-of-stock {
-  color: red;
-}
-
-/* Liste des livres */
+/* =============================== */
+/* Liste des livres               */
+/* =============================== */
 #book-list {
   margin-top: 20px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background-color: #fafafa;
+  background-color: var(--muted-bg);
 }
-
 .book-item {
-  border-bottom: 1px solid #ddd;
-  padding: 10px 0;
   display: flex;
   gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
 }
-
-.book-item:last-child {
-  border-bottom: none;
-}
-
+.book-item:last-child { border-bottom: none; }
 .book-cover {
   max-width: 80px;
   border-radius: 4px;
 }
-
-.book-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.book-title {
-  font-weight: bold;
-  color: #007BFF;
-}
-
-.book-author {
-  font-style: italic;
-  color: #555;
-  margin-top: 5px;
-}
-
+.book-details { display: flex; flex-direction: column; }
+.book-title { font-weight: bold; color: var(--primary); }
+.book-author { font-style: italic; color: #555; margin-top: 5px; }
 .delete-button {
-  background-color: #d9534f;
-  color: white;
-  border: none;
+  background-color: var(--danger);
+  color: #fff;
   padding: 5px 10px;
+  border: none;
   border-radius: 4px;
   cursor: pointer;
   margin-top: 5px;
+  width: auto;
 }
-
 .delete-button:hover {
-  background-color: #c9302c;
+  background-color: var(--danger-hover);
 }
 
+/* =============================== */
+/* Barre de recherche             */
+/* =============================== */
 #search-book {
+  display: block;
+  margin: 10px auto;
   width: 60%;
   padding: 10px;
-  margin: 10px auto;
-  display: block;
-  border: 1px solid #ccc;
   border-radius: 4px;
 }
-
 .total-books {
   margin-top: 20px;
+  text-align: center;
   font-size: 18px;
   font-weight: bold;
   color: #2c3e50;
-  text-align: center;
 }
 
-/* Onglets pour résultats multiples */
+/* =============================== */
+/* Onglets                        */
+/* =============================== */
 .tabs {
   display: flex;
   border-bottom: 1px solid #ccc;
   overflow-x: auto;
   margin-bottom: 20px;
 }
-
 .tab {
-  flex: none;
   padding: 10px 15px;
   border: 1px solid #ccc;
   border-bottom: none;
-  background-color: #f1f1f1;
+  background: #f1f1f1;
   cursor: pointer;
   margin-right: 2px;
-  transition: background-color 0.3s;
+  transition: background 0.3s;
 }
-
-.tab:hover {
-  background-color: #e0e0e0;
-}
-
+.tab:hover { background: #e0e0e0; }
 .tab.active {
-  background-color: white;
+  background: #fff;
   font-weight: bold;
 }
 
-/* Zone d'édition manuelle */
+/* =============================== */
+/* Édition manuelle               */
+/* =============================== */
 #manual-edit {
   margin: 10px auto;
   width: 80%;
-  text-align: left;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background: #ffffff;
+  background: var(--muted-bg);
 }
-
 #manual-edit label {
   display: inline-block;
   margin-top: 10px;
 }
 
 /* =============================== */
-/* Styles pour le mode sombre      */
+/* Spinner                        */
 /* =============================== */
-.dark body {
-  background: #121212;
-  color: #e0e0e0;
+.spinner {
+  width: 36px;
+  height: 36px;
+  margin: 20px auto;
+  border: 4px solid rgba(0,0,0,0.1);
+  border-left-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =============================== */
+/* Scanner Overlay                */
+/* =============================== */
+#scanner-container {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-bg);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+#scanner-container.active {
+  display: flex;
+}
+#scanner-video {
+  width: 80vw;
+  max-width: 400px;
+  border: 2px solid #fff;
+  border-radius: 4px;
+}
+#stop-scan {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--danger);
+  color: #fff;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+#stop-scan:hover {
+  background-color: var(--danger-hover);
 }
 
-.dark .navbar {
-  background-color: #1e1e1e;
-  box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
-}
-
-.dark .navbar-brand,
-.dark .navbar-links a,
-.dark .mode-toggle-btn {
-  color: #e0e0e0;
-}
-
-.dark .container {
-  background: #1e1e1e;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-}
-
-.dark h1,
-.dark h2 {
-  color: #66b0ff;
-}
-
-.dark button,
-.dark .mode-toggle-btn {
-  background-color: #1a73e8;
-}
-
-.dark button:hover,
-.dark .mode-toggle-btn:hover {
-  background-color: #1558b0;
-}
-
-.dark input[type="text"],
-.dark input[type="number"],
-.dark textarea,
-.dark select {
-  background-color: #333;
-  color: #e0e0e0;
-  border: 1px solid #555;
-}
-
-.dark #book-list {
-  background-color: #1e1e1e;
-  border: 1px solid #555;
-}
-
-/* Vidéo de démonstration dimensionnée */
+/* =============================== */
+/* Vidéo de démonstration fixée   */
+/* =============================== */
 .fonction-video {
   display: block;
-  margin: 0 auto 20px auto;
+  margin: 0 auto 20px;
   width: 80%;
-  max    -width: 600px;
+  max-width: 600px;
   height: auto;
   border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
-
