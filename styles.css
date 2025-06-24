@@ -27,7 +27,6 @@ body {
 .navbar-brand {
   display: flex;
   align-items: center;
-  font-family: 'Montserrat', sans-serif;
   font-size: 1.4rem;
   font-weight: 700;
   color: #333;
@@ -48,7 +47,6 @@ body {
   font-weight: 500;
   transition: opacity 0.3s;
 }
-
 .navbar-links a:hover {
   opacity: 0.7;
 }
@@ -60,7 +58,6 @@ body {
   cursor: pointer;
   transition: opacity 0.3s;
 }
-
 .mode-toggle-btn:hover {
   opacity: 0.7;
 }
@@ -120,7 +117,6 @@ button {
   width: 130px;
   margin-bottom: 10px;
 }
-
 button:hover {
   background-color: #0056b3;
 }
@@ -132,7 +128,6 @@ button:hover {
   background-color: #f8cbdb;
   width: 200px;
 }
-
 #manual-add-toggle:hover {
   background-color: #f8cbdb;
 }
@@ -157,7 +152,6 @@ button:hover {
   justify-content: center;
   z-index: 2000;
 }
-
 #scanner-container.hidden {
   display: none;
 }
@@ -180,7 +174,6 @@ button:hover {
   border-radius: 4px;
   cursor: pointer;
 }
-
 #stop-scan:hover {
   background-color: #c9302c;
 }
@@ -201,7 +194,6 @@ button:hover {
   margin: 20px auto;
   animation: spin 1s linear infinite;
 }
-
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -216,89 +208,81 @@ button:hover {
   text-align: center;
 }
 
-/* Couvertures uniformisées */
-.book-cover,
+/* Couverture unique sur la fiche */
 #cover {
   width: 100px;
   height: 150px;
   object-fit: cover;
   border-radius: 4px;
-  margin: 0 auto;
   display: block;
+  margin: 10px auto;
   background: #f0f0f0;
 }
 
-/* Cache la balise img si src vide */
+/* ================================= */
+/* Liste des livres                  */
+/* ================================= */
+
+/* Conteneur du livre */
+.book-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #444;
+}
+.book-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Jaquette */
+.book-cover {
+  flex-shrink: 0;
+  width: 100px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #f0f0f0;
+  margin-right: 1rem;
+  margin-left: 0;
+}
+/* cache si pas de src */
 .book-cover[src=""] {
   display: none;
 }
 
-/* Liste des livres */
-#book-list {
-  margin-top: 20px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #fafafa;
-}
-
-.book-item {
-  border-bottom: 1px solid #ddd;
-  padding: 10px 0;
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-.book-item:last-child {
-  border-bottom: none;
-}
-
+/* Détails */
 .book-details {
   display: flex;
   flex-direction: column;
 }
-
-/* Mise en forme des lignes de détail */
 .book-details > div {
   margin: 0.4rem 0;
 }
 
-/* Titre */
-.book-title {
-  font-weight: bold;
-  color: #007BFF;
-}
+.book-title   { font-weight: bold; color: #007BFF; }
+.book-author  { font-style: italic; color: #555; }
+.book-summary { font-style: italic; }
 
-/* Auteur */
-.book-author {
-  font-style: italic;
-  color: #555;
-}
-
-/* Résumé */
-.book-summary {
-  /* optionnel: font-style: italic; */
-}
-
-/* Stock avec couleur selon niveau */
+/* Stock */
 .book-stock {
   padding: 0.2rem 0.6rem;
   border-radius: 0.25rem;
   display: inline-block;
   font-weight: bold;
 }
-.stock-ok  { background: rgba(  0,128,  0,0.1); color: green; }
-.stock-low { background: rgba(255,165,  0,0.1); color: orange; }
-.stock-out { background: rgba(255,  0,  0,0.1); color: red; }
+.stock-ok  { background: rgba(0,128,0,0.1); color: green; }
+.stock-low { background: rgba(255,165,0,0.1); color: orange; }
+.stock-out { background: rgba(255,0,0,0.1);   color: red; }
 
-/* Salle en Rubis */
+/* Salle */
 .book-room {
   color: #e0115f;
   font-style: italic;
 }
 
-/* Actions (boutons) alignées à droite */
+/* Actions */
 .book-actions {
   margin-top: 0.5rem;
   text-align: right;
@@ -321,7 +305,7 @@ button:hover {
   background-color: #c9302c;
 }
 
-/* Barre de recherche et total */
+/* Barre de recherche */
 #search-book {
   width: 60%;
   padding: 10px;
@@ -331,6 +315,7 @@ button:hover {
   border-radius: 4px;
 }
 
+/* Total */
 .total-books {
   margin-top: 20px;
   font-size: 18px;
@@ -339,14 +324,13 @@ button:hover {
   text-align: center;
 }
 
-/* Onglets pour résultats multiples */
+/* Onglets */
 .tabs {
   display: flex;
   border-bottom: 1px solid #ccc;
   overflow-x: auto;
   margin-bottom: 20px;
 }
-
 .tab {
   flex: none;
   padding: 10px 15px;
@@ -357,11 +341,9 @@ button:hover {
   margin-right: 2px;
   transition: background-color 0.3s;
 }
-
 .tab:hover {
   background-color: #e0e0e0;
 }
-
 .tab.active {
   background-color: white;
   font-weight: bold;
@@ -377,7 +359,6 @@ button:hover {
   border-radius: 4px;
   background: #ffffff;
 }
-
 #manual-edit label {
   display: inline-block;
   margin-top: 10px;
@@ -395,7 +376,6 @@ button:hover {
   background-color: #1e1e1e;
   box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
 }
-
 .dark .navbar-brand,
 .dark .navbar-links a,
 .dark .mode-toggle-btn {
@@ -406,7 +386,6 @@ button:hover {
   background: #1e1e1e;
   box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
-
 .dark h1,
 .dark h2 {
   color: #66b0ff;
@@ -416,7 +395,6 @@ button:hover {
 .dark .mode-toggle-btn {
   background-color: #1a73e8;
 }
-
 .dark button:hover,
 .dark .mode-toggle-btn:hover {
   background-color: #1558b0;
@@ -435,7 +413,6 @@ button:hover {
   background-color: #2a2a2a;
   border-color: #555;
 }
-
 .dark #book-list {
   background-color: #1e1e1e;
   border: 1px solid #555;
