@@ -57,14 +57,15 @@
 
 <!-- Formulaire manuel -->
     <button id="manual-add-toggle">➕ Ajouter un livre manuellement</button>
-
-    <form id="manual-add-form" class="form hidden">
-      <input type="text" id="manual-title" placeholder="Titre du livre" required>
-      <input type="text" id="manual-author-full" placeholder="Auteur du livre" required>
-      <textarea id="manual-summary-full" placeholder="Résumé" rows="5" required></textarea>
-      <input type="text" id="manual-isbn" placeholder="ISBN unique (obligatoire)" required>
-      <button type="submit">Ajouter le livre</button>
-    </form>
+   <form id="manual-add-form" class="form hidden">
+  <input type="text"  id="manual-title"      placeholder="Titre du livre"               required>
+  <input type="text"  id="manual-author-full" placeholder="Auteur du livre"               required>
+  <textarea      id="manual-summary-full"     placeholder="Résumé" rows="5"          required></textarea>
+  <input type="text"  id="manual-isbn"         placeholder="ISBN unique (obligatoire)"  required>
+  <input type="url"   id="manual-cover-url"    placeholder="URL de la couverture (optionnel)">
+  <input type="number" id="manual-stock"       placeholder="Stock initial" min="0">
+  <button type="submit">Ajouter le livre</button>
+</form>
 
     <!-- Spinner de chargement -->
     <div id="spinner" class="spinner hidden"></div>
