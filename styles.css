@@ -142,17 +142,22 @@ button {
   background-color: #f9f9f9;
 }
 
+/* override ID specificity */
+#scanner-container.hidden {
+  display: none;
+}
+
+/* base style pour faire apparaître l’overlay */
 #scanner-container {
+  display: flex;
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.75);
-  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 2000;
 }
-
 /* Zone où Quagga va injecter son canvas/video */
 #scanner-video {
   width: 80vw;
