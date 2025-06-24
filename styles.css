@@ -142,41 +142,6 @@ button {
   background-color: #f9f9f9;
 }
 
-/* Conteneur du scanner */
-#scanner-container {
-  position: fixed;
-  top: 10%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,255,255,0.95);
-  padding: 10px;
-  border-radius: 8px;
-  z-index: 2000;
-  text-align: center;
-}
-
-#scanner-video {
-  width: 300px;
-  height: auto;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
-#stop-scan {
-  padding: 6px 12px;
-  background-color: #d9534f;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#stop-scan:hover {
-  background-color: #c9302c;
-}
-
-
-
 #scanner-container {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -187,12 +152,16 @@ button {
   justify-content: center;
   z-index: 2000;
 }
+
+/* Zone où Quagga va injecter son canvas/video */
 #scanner-video {
   width: 80vw;
   max-width: 400px;
-  height: auto;
   border: 2px solid #fff;
+  border-radius: 4px;
 }
+
+/* Bouton « Arrêter le scan » */
 #stop-scan {
   margin-top: 1rem;
   padding: 0.5rem 1rem;
@@ -200,6 +169,10 @@ button {
   color: #fff;
   border: none;
   border-radius: 4px;
+  cursor: pointer;
+}
+#stop-scan:hover {
+  background-color: #c9302c;
 }
 
 
