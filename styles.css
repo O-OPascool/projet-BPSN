@@ -121,6 +121,33 @@ button {
   margin-bottom: 10px;
 }
 
+/* Bouton d'ajout manuel */
+#manual-add-toggle {
+  display: block;           /* pour qu'il occupe toute la largeur */
+  margin: 15px auto;        /* espacement au-dessus et en dessous */
+  background-color: #28a745;/* vert pour le différencier */
+  width: 200px;             /* taille fixe ou adapte à ton design */
+}
+
+#manual-add-toggle:hover {
+  background-color: #218838;/* un vert un peu plus foncé au survol */
+}
+
+/* Formulaire manuel */
+#manual-add-form {
+  margin-top: 10px;         /* écarte du bouton */
+  padding: 15px;            /* espace intérieur symétrique */
+  border: 1px solid #ccc;   /* pour le démarquer */
+  border-radius: 4px;
+  background-color: #f9f9f9;/* léger fond gris */
+}
+
+/* En mode sombre, harmoniser le fond */
+.dark #manual-add-form {
+  background-color: #2a2a2a;
+  border-color: #555;
+}
+
 button:hover {
   background-color: #0056b3;
 }
