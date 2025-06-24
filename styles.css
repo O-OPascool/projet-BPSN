@@ -292,9 +292,9 @@ button:hover {
 .stock-low { background: rgba(255,165,  0,0.1); color: orange; }
 .stock-out { background: rgba(255,  0,  0,0.1); color: red; }
 
-/* Salle en gris sombre */
+/* Salle en Rubis */
 .book-room {
-  color: #666;
+  color: #e0115f;
   font-style: italic;
 }
 
