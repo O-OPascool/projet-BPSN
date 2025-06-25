@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  async function fetchAPIs(isbn){
+  async function fetchBookDataFromAPIs(isbn){
     try {
       const g = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
                         .then(r=>r.json());
