@@ -79,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const hideSpinner = () => spinner.classList.add('hidden');
   const sanitize    = s => s.replace(/[-\s]/g, '');
   const validISBN   = s => (s.length===10||s.length===13)&&!isNaN(s);
+  const isValidISBN = validISBN;
   const sanitizeISBN = sanitize;
 
   function setCover(el,isbn){
