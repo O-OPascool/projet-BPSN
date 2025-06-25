@@ -1,7 +1,9 @@
 // script.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
 import { getDatabase, ref, child, set, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
-import Quagga from "https://unpkg.com/quagga/dist/quagga.min.js";
+
+// La ligne "import Quagga..." a été SUPPRIMÉE.
+// Quagga sera disponible globalement car il est chargé via une balise <script> dans le fichier HTML.
 
 document.addEventListener('DOMContentLoaded', () => {
   // —— Toggle thème clair/sombre ——
@@ -20,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // —— Initialisation Firebase ——
   const firebaseConfig = {
-    apiKey: "AIzaSyDKE…",
+    apiKey: "AIzaSyDKE…", // Pensez à sécuriser vos clés API pour la production
     authDomain: "bpsn-74f1b.firebaseapp.com",
     databaseURL: "https://bpsn-74f1b-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "bpsn-74f1b",
@@ -138,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     manualRoomSel.innerHTML = '<option value="">Salle…</option>';
     roomSelectEl.innerHTML  = '<option value="">—</option>';
     filterRoomSel.innerHTML = '<option value="">Toutes</option>';
-    Object.values(rooms).forEach(name => {
+    Object.values(rooms).sort().forEach(name => { // Ajout de .sort() pour un ordre alphabétique
       // liste
       const li = document.createElement('li');
       li.textContent = name + ' ';
@@ -176,61 +178,86 @@ document.addEventListener('DOMContentLoaded', () => {
     bookListEl.innerHTML = '';
     const txt = textFilter.value.toLowerCase();
     const roomF = filterRoomSel.value;
-    for (const isbn in allBooks) {
-      const b = allBooks[isbn], st = allStocks[isbn]||0;
-      if (txt && !b.title.toLowerCase().includes(txt) && !b.author.toLowerCase().includes(txt)) continue;
-      if (roomF && b.room !== roomF) continue;
-      const item = document.createElement('div');
-      item.className = 'book-item';
+    const bookEntries = Object.entries(allBooks);
 
-      const img = document.createElement('img');
-      img.className = 'book-cover';
-      if (b.cover) { img.src = b.cover; img.onerror = () => img.style.display='none'; }
-      else img.style.display='none';
-      item.appendChild(img);
+    bookEntries
+      .sort(([, a], [, b]) => a.title.localeCompare(b.title)) // Tri par titre
+      .forEach(([isbn, b]) => {
+        const st = allStocks[isbn] || 0;
+        if (txt && !b.title.toLowerCase().includes(txt) && !b.author.toLowerCase().includes(txt)) return;
+        if (roomF && b.room !== roomF) return;
 
-      const det = document.createElement('div');
-      det.className = 'book-details';
-      const cls = st>0 ? (st<5 ? 'stock-low':'stock-ok') : 'stock-out';
-      det.innerHTML = `
-        <div class="book-title">${b.title} <em>(${isbn})</em></div>
-        <div class="book-author">Auteur : ${b.author}</div>
-        <div class="book-summary">Résumé : ${b.summary}</div>
-        <div class="book-stock ${cls}">${st>0?`Stock : ${st}`:'Hors stock'}</div>
-        <div class="book-room">Salle : ${b.room||'—'}</div>
-        <div class="book-actions">
-          <button onclick="deleteBook('${isbn}')">🗑️</button>
-          <button onclick="editManualBook('${isbn}')">✏️</button>
-        </div>`;
-      item.appendChild(det);
-      bookListEl.appendChild(item);
-    }
+        const item = document.createElement('div');
+        item.className = 'book-item p-4 border rounded-lg shadow-sm flex gap-4';
+
+        const img = document.createElement('img');
+        img.className = 'book-cover w-20 h-28 object-cover flex-shrink-0';
+        if (b.cover) {
+          img.src = b.cover;
+          img.alt = `Couverture de ${b.title}`;
+          img.onerror = () => img.style.display = 'none';
+        } else {
+          img.style.display = 'none';
+        }
+        item.appendChild(img);
+
+        const det = document.createElement('div');
+        det.className = 'book-details flex-grow';
+        const cls = st > 0 ? (st < 5 ? 'stock-low text-yellow-600' : 'stock-ok text-green-600') : 'stock-out text-red-600';
+        det.innerHTML = `
+          <div class="book-title font-bold text-lg">${b.title} <em class="text-sm font-normal text-gray-500">(${isbn})</em></div>
+          <div class="book-author text-gray-700 dark:text-gray-300">Auteur : ${b.author}</div>
+          <p class="book-summary text-sm my-2">${b.summary.substring(0, 150)}${b.summary.length > 150 ? '...' : ''}</p>
+          <div class="book-stock font-semibold ${cls}">${st > 0 ? `Stock : ${st}` : 'Hors stock'}</div>
+          <div class="book-room text-sm">Salle : ${b.room || 'Non assignée'}</div>
+          <div class="book-actions mt-2 flex gap-2">
+            <button class="action-btn" onclick="window.editManualBook('${isbn}')">✏️ Éditer</button>
+            <button class="action-btn-danger" onclick="window.deleteBook('${isbn}')">🗑️ Supprimer</button>
+          </div>`;
+        item.appendChild(det);
+        bookListEl.appendChild(item);
+      });
     updateTotalCount();
   }
+  
   window.deleteBook = isbn => {
-    if (!confirm(`Supprimer ${isbn} ?`)) return;
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer le livre avec l'ISBN ${isbn} ? Cette action est irréversible.`)) return;
     Promise.all([
       set(child(stocksRef, isbn), null),
       set(child(booksDataRef, isbn), null)
-    ]);
+    ]).then(() => {
+        alert("Livre supprimé avec succès.");
+    }).catch(err => {
+        alert("Erreur lors de la suppression : " + err.message);
+    });
   };
+
+  // Chargement initial des données
   onValue(booksDataRef, snap => {
-    allBooks = snap.val()||{};
-    onValue(stocksRef, snap2 => {
-      allStocks = snap2.val()||{};
+    allBooks = snap.val() || {};
+    // Assurez-vous d'avoir les données de stock avant de rendre la liste
+    get(stocksRef).then(snap2 => {
+      allStocks = snap2.val() || {};
       renderBookList();
     });
   });
+  // Mettre à jour la liste si seulement le stock change
+  onValue(stocksRef, snap => {
+    allStocks = snap.val() || {};
+    renderBookList();
+  });
+
 
   // —— Recherche / ajout par ISBN ——
   let pending = null, currentISBN = null;
   function checkIfManualNeeded(a,s) {
-    fillBtn.classList.toggle('hidden', !(a==="Auteur inconnu"||s==="Aucune information"));
+    const isNeeded = (a === "Auteur inconnu" || s === "Aucune information" || s.length < 20);
+    fillBtn.classList.toggle('hidden', !isNeeded);
   }
   fillBtn.onclick = () => {
     manualEditDiv.classList.remove('hidden');
-    editAuthor.value  = pending.author;
-    editSummary.value = pending.summary;
+    editAuthor.value  = pending.author === "Auteur inconnu" ? "" : pending.author;
+    editSummary.value = pending.summary === "Aucune information" ? "" : pending.summary;
   };
   document.getElementById('save-manual-info').onclick = () => {
     if (editAuthor.value)  pending.author  = editAuthor.value.trim();
@@ -251,21 +278,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isValidISBN(raw)) { alert('ISBN invalide'); hideSpinner(); return; }
     currentISBN = raw;
     let data = await fetchBookDataFromAPIs(raw);
-    if (!data && raw.length===10) {
+    if (!data && raw.length === 10) {
       const alt = convertISBN10toISBN13(raw);
       data = await fetchBookDataFromAPIs(alt);
       if (data) currentISBN = alt;
     }
     searchTabs.innerHTML = ''; searchTabs.classList.add('hidden');
+    bookInfoEl.classList.add('hidden');
+
     if (data?.googleBooksResults?.length > 1) {
       searchTabs.classList.remove('hidden');
       data.googleBooksResults.forEach((vol,i) => {
         const info = parseVolumeInfo(vol.volumeInfo||{});
         const btn  = document.createElement('button');
-        btn.className = 'tab';
-        btn.textContent = info.title;
-        btn.onclick    = () => showBookInfos(info);
-        if (i===0) { btn.classList.add('active'); showBookInfos(info); }
+        btn.className = 'tab px-4 py-2 border-b-2';
+        btn.textContent = info.title.substring(0, 30) + (info.title.length > 30 ? '...' : '');
+        btn.onclick    = (event) => {
+            document.querySelectorAll('#search-results .tab').forEach(t => t.classList.remove('active', 'border-blue-500', 'text-blue-500'));
+            event.currentTarget.classList.add('active', 'border-blue-500', 'text-blue-500');
+            showBookInfos(info);
+        }
+        if (i===0) { 
+            btn.classList.add('active', 'border-blue-500', 'text-blue-500');
+            showBookInfos(info);
+        }
         searchTabs.appendChild(btn);
       });
     }
@@ -274,10 +310,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     else if (data?.openLibraryResult) {
       const { title, author, summary } = data.openLibraryResult;
-      showBookInfos({ title, author, summary, cover: null });
+      const completedData = await completeWithGoogleIfNeeded(currentISBN, { title, author, summary, cover: null });
+      showBookInfos(completedData);
     }
     else {
-      showBookInfos({ title:"Nouveau livre",author:"Auteur inconnu",summary:"—",cover:null });
+      showBookInfos({ title:"Nouveau livre",author:"Auteur inconnu",summary:"Aucune information",cover:null });
     }
     hideSpinner();
   });
@@ -297,35 +334,42 @@ document.addEventListener('DOMContentLoaded', () => {
       coverImg.style.display='none';
     }
     get(child(stocksRef, currentISBN)).then(snap => {
-      stockSpan.textContent = snap.exists() ? snap.val() : '0';
+      const currentStock = snap.exists() ? snap.val() : 0;
+      stockSpan.textContent = currentStock;
+      newStockInput.value = currentStock; // Pré-remplir le champ de mise à jour
     });
     get(child(booksDataRef, currentISBN)).then(snap => {
-      if (snap.exists()) {
-        confirmBtn.style.display = 'none';
-        cancelBtn.style.display  = 'none';
-      } else {
-        confirmBtn.style.display = '';
-        cancelBtn.style.display  = '';
-      }
+      const exists = snap.exists();
+      confirmBtn.style.display = exists ? 'none' : '';
+      cancelBtn.style.display  = exists ? 'none' : '';
+      stockForm.style.display = exists ? '' : 'none'; // Afficher le form de stock si le livre existe
     });
   }
 
   confirmBtn.onclick = async () => {
     const room = roomSelectEl.value;
+    if (!room) {
+        alert("Veuillez sélectionner une salle pour le livre.");
+        return;
+    }
     await Promise.all([
       set(child(booksDataRef, currentISBN), { ...pending, room }),
-      set(child(stocksRef, currentISBN), 0)
+      set(child(stocksRef, currentISBN), 1) // On l'ajoute avec un stock initial de 1
     ]);
-    alert("Livre ajouté !");
-    isbnForm.dispatchEvent(new Event('submit'));
+    alert("Livre ajouté avec un stock de 1 !");
+    isbnForm.dispatchEvent(new Event('submit')); // Recharger les infos pour voir le nouvel état
   };
-  cancelBtn.onclick = () => bookInfoEl.classList.add('hidden');
+  cancelBtn.onclick = () => {
+    bookInfoEl.classList.add('hidden');
+    searchTabs.classList.add('hidden');
+    isbnForm.reset();
+  };
 
   // —— Mise à jour du stock ——
   stockForm.addEventListener('submit', async e => {
     e.preventDefault();
     const qte = parseInt(newStockInput.value,10);
-    if (isNaN(qte)||qte<0) return alert('Quantité invalide');
+    if (isNaN(qte) || qte < 0) return alert('Quantité invalide');
     await set(child(stocksRef, currentISBN), qte);
     alert('Stock mis à jour.');
     stockSpan.textContent = qte;
@@ -333,7 +377,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // —— Ajout / édition manuel ——
   let isEditing=false, editingISBN=null;
-  manualToggleBtn.onclick = () => manualForm.classList.toggle('hidden');
+  manualToggleBtn.onclick = () => {
+    manualForm.classList.toggle('hidden');
+    manualForm.reset();
+    isEditing = false;
+    editingISBN = null;
+    document.getElementById('manual-isbn').removeAttribute('readonly');
+    document.getElementById('manual-form-title').textContent = "Ajouter un livre manuellement";
+  };
   manualForm.onsubmit = async e => {
     e.preventDefault();
     const t = document.getElementById('manual-title').value.trim();
@@ -342,25 +393,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const i = sanitizeISBN(document.getElementById('manual-isbn').value.trim());
     const c = document.getElementById('manual-cover-url').value.trim();
     const r = document.getElementById('manual-room').value;
-    const sv= parseInt(document.getElementById('manual-stock').value,10)||0;
-    if (!t||!a||!s||!i||!isValidISBN(i)) return alert("Champs obligatoires");
-    if (sv<0) return alert("Stock négatif");
-    if (!isEditing && (await get(child(booksDataRef,i))).exists())
-      return alert("ISBN déjà existant");
+    const sv= parseInt(document.getElementById('manual-stock').value,10);
+    if (!t || !a || !i) return alert("Le titre, l'auteur et l'ISBN sont obligatoires.");
+    if (!isValidISBN(i)) return alert("L'ISBN fourni est invalide.");
+    if (isNaN(sv) || sv < 0) return alert("Le stock doit être un nombre positif ou nul.");
+    
+    // Vérifier si l'ISBN existe déjà lors d'un ajout (et non d'une édition)
+    if (!isEditing && (await get(child(booksDataRef,i))).exists()) {
+      return alert("Un livre avec cet ISBN existe déjà. Utilisez la fonction d'édition.");
+    }
     const key = isEditing ? editingISBN : i;
     await Promise.all([
-      set(child(booksDataRef,key), { title:t,author:a,summary:s,cover:(c.startsWith('http')||c.startsWith('data:')?c:''),room:r }),
+      set(child(booksDataRef,key), { title:t,author:a,summary:s || "Aucun résumé.",cover:(c.startsWith('http')||c.startsWith('data:')?c:''),room:r }),
       set(child(stocksRef,key), sv)
     ]);
-    alert(isEditing?"Modifié !":"Ajouté !");
+    alert(isEditing ? "Livre modifié avec succès !" : "Livre ajouté avec succès !");
     isEditing=false; editingISBN=null;
     document.getElementById('manual-isbn').removeAttribute('readonly');
-    manualForm.reset(); manualForm.classList.add('hidden');
+    manualForm.reset();
+    manualForm.classList.add('hidden');
   };
+  
   window.editManualBook = async isbn => {
     const [bs,ss] = await Promise.all([ get(child(booksDataRef,isbn)), get(child(stocksRef,isbn)) ]);
-    if (!bs.exists()) return alert("Non trouvé");
+    if (!bs.exists()) return alert("Livre non trouvé dans la base de données.");
+    
     const d  = bs.val(), sv = ss.exists()?ss.val():0;
+    document.getElementById('manual-form-title').textContent = "Éditer le livre";
     document.getElementById('manual-title').value        = d.title;
     document.getElementById('manual-author-full').value  = d.author;
     document.getElementById('manual-summary-full').value = d.summary;
@@ -379,13 +438,20 @@ document.addEventListener('DOMContentLoaded', () => {
     scannerCont.classList.remove('hidden');
     Quagga.init({
       inputStream: { name:"Live", type:"LiveStream", target:scannerVideo, constraints:{facingMode:"environment"} },
-      decoder: { readers:["ean_reader","ean_13_reader"] }
+      decoder: { readers:["ean_reader","ean_13_reader"] },
+      locate: true
     }, err => {
-      if (err) { alert("Erreur caméra"); scannerCont.classList.add('hidden'); return; }
+      if (err) { 
+        console.error(err);
+        alert("Erreur lors de l'initialisation de la caméra. Assurez-vous d'avoir donné la permission.");
+        scannerCont.classList.add('hidden'); 
+        return; 
+      }
       Quagga.start();
       Quagga.onDetected(({codeResult}) => {
         const code = codeResult.code;
-        if (/^\d{10,13}$/.test(code)) {
+        // Valide les codes EAN-13 (souvent les ISBN)
+        if (code && (code.length === 13 && code.startsWith('978')) || code.length === 10) {
           Quagga.stop();
           scannerCont.classList.add('hidden');
           cb(code);
@@ -395,14 +461,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   scanISBNBtn.onclick   = () => startScanner(code => {
     document.getElementById('isbn').value = code;
-    isbnForm.dispatchEvent(new Event('submit'));
+    isbnForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
   });
   scanManualBtn.onclick = () => startScanner(code => {
     const mi = document.getElementById('manual-isbn');
-    mi.value = code; mi.focus();
+    mi.value = code; 
+    mi.focus();
   });
   stopScanBtn.onclick   = () => {
     Quagga.stop();
     scannerCont.classList.add('hidden');
   };
+
+  // Rendre les fonctions d'édition/suppression accessibles globalement
+  window.editManualBook = editManualBook;
+  window.deleteBook = deleteBook;
 });
