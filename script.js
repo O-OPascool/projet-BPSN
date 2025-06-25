@@ -323,8 +323,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  
   confirmBtn.onclick = async () => {
-    const room = roomSelectEl.value;
+    const room = roomSelectMain.value;
     await Promise.all([
       set(child(booksDataRef, currentISBN), { ...pending, room }),
       set(child(stocksRef, currentISBN), 0)
@@ -332,7 +333,21 @@ document.addEventListener('DOMContentLoaded', () => {
     alert("Livre ajouté !");
     isbnForm.dispatchEvent(new Event('submit'));
   };
-  cancelBtn.onclick = () => bookInfoEl.classList.add('hidden');
+  cancelBtn.onclick = () => {
+    bookInfoEl.classList.add('hidden');
+  };
+
+  // —— Mise à jour du stock ——
+  stockForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const qte = parseInt(newStockInput.value, 10);
+    if (isNaN(qte) || qte < 0) {
+      return alert('Quantité invalide');
+    }
+    await set(child(stocksRef, currentISBN), qte);
+    alert('Stock mis à jour.');
+    stockSpan.textContent = qte;
+  });
 
   // —— Ajout / édition manuel ——
   let isEditing = false, editingISBN = null;
