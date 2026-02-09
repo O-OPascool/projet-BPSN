@@ -23,13 +23,13 @@ Synchronisation Cloud : Toutes vos données sont sauvegardées et accessibles in
 
 L'interface principale permet de parcourir la collection existante avec une barre de recherche ultra-rapide.
 
-<img src="home.png" width="100%" alt="Interface de recherche et consultation">
+<img src="./assets/home.png" width="100%" alt="Interface de recherche et consultation">
 
 ➕ Ajout et Gestion
 
 Un formulaire complet permet d'enrichir la base de données manuellement ou via la recherche ISBN.
 
-<img src="add.png" width="80%" alt="Interface d'ajout de stock">
+<img src="./assets/add.png" width="80%" alt="Interface d'ajout de stock">
 
 🛠️ Stack Technique
 Frontend : HTML5, CSS3 (Design responsive), JavaScript ES6.
